@@ -1,9 +1,10 @@
 // TestAlgorithms.cpp : 定义 DLL 应用程序的导出函数。
 //
-
 #include "stdafx.h"
 #include "TestAlgorithms.h"
-
+#include<list>
+#include<stack>
+#include<map>
 
 TESTALGORITHMS_API int DetectConnFindContours(Mat grayImg, vector<vector<Point>>&contours, const uchar thd, const bool bInverse)
 {
@@ -266,3 +267,131 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 	}
 	return true;
 }
+
+ TESTALGORITHMS_API void icvprCcaBySeedFill(const cv::Mat& _binImg, cv::Mat& _lableImg)  
+{  
+    // connected component analysis (4-component)  
+    // use seed filling algorithm  
+    // 1. begin with a foreground pixel and push its foreground neighbors into a stack;  
+    // 2. pop the top pixel on the stack and label it with the same label until the stack is empty  
+    //   
+    // foreground pixel: _binImg(x,y) = 1  
+    // background pixel: _binImg(x,y) = 0  
+  
+  
+    if (_binImg.empty() ||  
+        _binImg.type() != CV_8UC1)  
+    {  
+        return ;  
+    }  
+     threshold(_binImg, _binImg, 200, 255, CV_THRESH_BINARY_INV);
+
+    _lableImg.release() ;  
+    _binImg.convertTo(_lableImg, CV_32SC1) ;  
+  
+    int label = 1 ;  // start by 2  
+  
+    int rows = _binImg.rows - 1 ;  
+    int cols = _binImg.cols - 1 ;  
+    for (int i = 1; i < rows-1; i++)  
+    {  
+        int* data= _lableImg.ptr<int>(i) ;  
+        for (int j = 1; j < cols-1; j++)  
+        {  
+            if (data[j] == 255)  
+            {  
+                std::stack<std::pair<int,int>> neighborPixels ;     
+                neighborPixels.push(std::pair<int,int>(i,j)) ;     // pixel position: <i,j>  
+                ++label ;  // begin with a new label  
+                while (!neighborPixels.empty())  
+                {  
+                    // get the top pixel on the stack and label it with the same label  
+                    std::pair<int,int> curPixel = neighborPixels.top() ;  
+                    int curX = curPixel.first ;  
+                    int curY = curPixel.second ;  
+                    _lableImg.at<int>(curX, curY) = label ;  
+  
+                    // pop the top pixel  
+                    neighborPixels.pop() ;  
+  
+                    // push the 4-neighbors (foreground pixels)  
+                    if (_lableImg.at<int>(curX, curY-1) == 255)  
+                    {// left pixel  
+                        neighborPixels.push(std::pair<int,int>(curX, curY-1)) ;  
+                    }  
+                    if (_lableImg.at<int>(curX, curY+1) == 255)  
+                    {// right pixel  
+                        neighborPixels.push(std::pair<int,int>(curX, curY+1)) ;  
+                    }  
+                    if (_lableImg.at<int>(curX-1, curY) == 255)  
+                    {// up pixel  
+                        neighborPixels.push(std::pair<int,int>(curX-1, curY)) ;  
+                    }  
+                    if (_lableImg.at<int>(curX+1, curY) == 255)  
+                    {// down pixel  
+                        neighborPixels.push(std::pair<int,int>(curX+1, curY)) ;  
+                    }  
+                }         
+            }  
+        }  
+    }  
+}
+
+ void TESTALGORITHMS_API DFTtransform(const Mat _srcImg, Mat& _magnImg)
+ {
+	 if(_srcImg.rows<=0||_srcImg.cols<=0||_srcImg.depth()!=CV_8UC1)
+	 {
+		 cout<<"输入图像正确！"<<endl;
+	 }
+
+	 Mat padded;
+	 int m = getOptimalDFTSize(_srcImg.rows);
+	 int n = getOptimalDFTSize(_srcImg.cols);
+	 copyMakeBorder(_srcImg, padded, 0, m-_srcImg.rows, 0, n-_srcImg.cols, BORDER_CONSTANT, Scalar(0));
+
+	 //
+	 Mat planes[] = {Mat_<float>(padded), Mat::zeros(padded.size(), CV_32FC1)};
+	 Mat complexI;
+	 merge(planes,2, complexI);
+
+	 dft(complexI, complexI);  
+
+	 split(complexI, planes);
+
+	 magnitude(planes[0], planes[1], planes[0]);
+	 _magnImg = planes[0];
+
+	 _magnImg+=Scalar::all(1);
+	 log(_magnImg,_magnImg);
+
+	 //在上面的步骤中我们进行了边界填充，所以后面的步骤中，我们需要进行CROP
+	 //同时为了可视化，我们需要进行rearrange的操作，让图像的起点回到图像的中心位置显示
+
+	 _magnImg = _magnImg(cvRect(0,0,_magnImg.cols & -2, _magnImg.rows & -2)); //-2= (0xfffffffe) //crop image
+
+
+	 int cx = _magnImg.cols >>1;
+	 int cy = _magnImg.rows >>1;
+
+	 Mat q0(_magnImg, Rect(0,0,cx,cy));
+	 Mat q1(_magnImg, Rect(cx,0,cx,cy));
+	 Mat q2(_magnImg, Rect(0,cy,cx,cy));
+	 Mat q3(_magnImg, Rect(cx,cy,cx,cy));
+
+	 Mat temp;
+	 q0.copyTo(temp);
+	 q3.copyTo(q0);
+	 temp.copyTo(q3);
+
+	 q1.copyTo(temp);
+	 q2.copyTo(q1);
+	 temp.copyTo(q2);
+
+	 normalize(_magnImg, _magnImg, 0, 1, CV_MINMAX);
+
+
+
+
+     int c;
+
+ }

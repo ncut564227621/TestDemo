@@ -22,7 +22,7 @@ TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours)
 
 //Two-Pass（两遍扫描算法）
 /*/////////////////////////////////////////////////////////////////////////
-//第一遍扫描：假设前景像素灰度值=1， 背景像素灰度值=0，图像B,像素位置:x,y
+//第一遍扫描：假设前景像素灰度值=255， 背景像素灰度值=0，图像B,像素位置:x,y
   （1）访问当前像素B(x,y),如果B(x,y)==1
 	  a.如果B(x,y)邻域内的像素都为0:（可以选择4领域或者8邻域）
 	     B(x,y) = label; label+=1
@@ -41,3 +41,20 @@ bool upDateEqualLabel(vector<vector<int>>&equalLabel, vector<int>neighborLabel, 
 bool upDateBlobs(vector<cnnBlob>&blobs, const int i, const int j, const int label_index);
 
 TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitFlag, const int equal_index,  const int set_label);
+
+//Seed Fill算法
+/*/////////////////////////////////////////////////////////////////////////
+（1）扫描图像，直到当前像素点B(x,y) == 255：
+   a、将B(x,y)作为种子（像素位置），并赋予其一个label，然后将该种子相邻的所有前景像素都压入栈中；
+   b、弹出栈顶像素，赋予其相同的label，然后再将与该栈顶像素相邻的所有前景像素都压入栈中；
+   c、重复b步骤，直到栈为空；
+     此时，便找到了图像B中的一个连通区域，该区域内的像素值被标记为label；
+（2）重复第（1）步，直到扫描结束；
+     扫描结束后，就可以得到图像B中所有的连通区域；
+/////////////////////////////////////////////////////////////////////////*/
+void TESTALGORITHMS_API icvprCcaBySeedFill(const Mat& _binImg, Mat& _lableImg);
+
+/*/////////////////////////////////////////////////////////////////////////
+DFT变换
+/////////////////////////////////////////////////////////////////////////*/
+void TESTALGORITHMS_API DFTtransform(const Mat _srcImg, Mat& _magnImg);

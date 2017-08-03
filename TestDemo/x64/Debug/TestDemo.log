@@ -1,12 +1,6 @@
-﻿生成启动时间为 2017/8/3 10:31:44。
+﻿生成启动时间为 2017/8/3 18:53:08。
      1>项目“F:\3-Project\4-QFJ\TestDemo\TestDemo\TestDemo.vcxproj”在节点 2 上(Build 个目标)。
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files (x86)\Visual Leak Detector\include" /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Debug\TestDemo.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc110.pdb" /Gd /TP /errorReport:prompt TestDemo.cpp
-         TestDemo.cpp
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-       Link:
+     1>Link:
          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\3-Project\4-QFJ\TestDemo\x64\Debug\TestDemo.exe" /INCREMENTAL /NOLOGO /LIBPATH:../x64/Debug /LIBPATH:"C:\Program Files (x86)\Visual Leak Detector\lib\Win64" opencv_ts300d.lib opencv_world300d.lib TestAlgorithms.lib opencv_ts300d.lib opencv_world300d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"F:\3-Project\4-QFJ\TestDemo\x64\Debug\TestDemo.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\3-Project\4-QFJ\TestDemo\x64\Debug\TestDemo.lib" /MACHINE:X64 x64\Debug\stdafx.obj
          x64\Debug\TestDemo.obj
          TestDemo.vcxproj -> F:\3-Project\4-QFJ\TestDemo\x64\Debug\TestDemo.exe
@@ -14,4 +8,4 @@
 
 生成成功。
 
-已用时间 00:00:02.31
+已用时间 00:00:00.87

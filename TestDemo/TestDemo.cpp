@@ -61,20 +61,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	int set_label = equal_label[i][0];
 	secondPass(equal_label, bVisitFlag, i, set_label);
 	}*/
-
-	
+	Mat magnImg;
+	DFTtransform(img,   magnImg);
 
 	for(int i =0; i<10; i++)
 	{
 		Mat inImg = img.clone();
 		vector<cnnBlob>blobs;
-		const int64 nStart = getTickCount();
-
-		//int nConnNums = DetectConnFindContours(inImg, contours, 200, true);
 		int nNeighCount = 1;
 		uchar maskArr[9]= {0,1,0,1,0,1,0,1,0};
 		Mat labelMask(2*nNeighCount+1, 2*nNeighCount+1, CV_8UC1, maskArr);
-		DetectConnTowPass(inImg, blobs,200, labelMask, true);
+		Mat labelImg;
+		const int64 nStart = getTickCount();
+
+		//int nConnNums = DetectConnFindContours(inImg, contours, 200, true);
+		icvprCcaBySeedFill(inImg, labelImg);
 
 		double nDuration = (getTickCount() - nStart)/getTickFrequency();
 		cout<<"cost time: "<<nDuration*1000<<"ms"<<endl;
