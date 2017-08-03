@@ -11,6 +11,12 @@
 using namespace cv;
 using namespace std;
 
+typedef struct tagcnnBlob
+{
+	int label;
+	vector<Point>blob_pts;
+}cnnBlob;
+
 TESTALGORITHMS_API int DetectConnFindContours(Mat grayImg, vector<vector<Point>>&contours, const uchar threshold, const bool bInverse);
 TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours);
 
@@ -28,6 +34,10 @@ TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours)
 	        找到与label = B(x,y)同属相等关系的一个最小label值，赋予给B(x,y)；
 	   完成扫描后，图像中具有相同label值的像素就组成了同一个连通区域
 /////////////////////////////////////////////////////////////////////////*/
-TESTALGORITHMS_API int DetectConnTowPass(Mat grayImg, vector<vector<Point>>&contours, const uchar thd, const Mat labelMask, const bool bInverse);
+TESTALGORITHMS_API int DetectConnTowPass(Mat grayImg, vector<cnnBlob>&blobs, const uchar thd, const Mat labelMask, const bool bInverse);
 
 bool upDateEqualLabel(vector<vector<int>>&equalLabel, vector<int>neighborLabel, const int minLabel);
+
+bool upDateBlobs(vector<cnnBlob>&blobs, const int i, const int j, const int label_index);
+
+TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitFlag, const int equal_index,  const int set_label);

@@ -56,7 +56,7 @@ TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours)
 	return 0;
 }
 
-TESTALGORITHMS_API int DetectConnTowPass(Mat grayImg, vector<vector<Point>>&contours, const uchar thd, const Mat labelMask, const bool bInverse)
+TESTALGORITHMS_API int DetectConnTowPass(Mat grayImg, vector<cnnBlob>&blobs, const uchar thd, const Mat labelMask, const bool bInverse)
 {
 	if (grayImg.empty() || grayImg.channels() > 1)
 	{
@@ -147,27 +147,47 @@ TESTALGORITHMS_API int DetectConnTowPass(Mat grayImg, vector<vector<Point>>&cont
 	//second pass;
 	bool *bVisitFlag = new bool[equalLabel.size()];
 	memset(bVisitFlag, false, equalLabel.size()*sizeof(bool));
-	vector<vector<int>>::iterator iter = equalLabel.begin();
-	vector<vector<int>>::iterator iterEnd = equalLabel.end();
-	
-	for(;iter!=iterEnd; iter++)
+	for(int i =1; i<equalLabel.size();  i++)
 	{
-		vector<int> curLabelVec = *iter;
-		int first_label = curLabelVec[0];
-		if(bVisitFlag[first_label])
-		{
+		if(bVisitFlag[i]) 
 			continue;
-		}
-		else
+		int set_label = equalLabel[i][0];
+		secondPass(equalLabel, bVisitFlag, i, set_label);
+	}
+
+	//标注所有的联通域
+	//Mat colorLabelMat(labelMat.size(), CV_8UC3, Scalar::all(0));
+
+	for(int i =0; i<nRows; i++)
+	{
+		int* ptr = labelMat.ptr<int>(i);
+		//Vec3b* clrPtr = colorLabelMat.ptr<Vec3b>(i);
+		for(int j =0; j<nCols; j++)
 		{
-			for(int i =1; i<curLabelVec.size(); i++)
-			{
-	            
-			}
+			int label = ptr[j];
+			ptr[j] = equalLabel[label][0];
+			label = equalLabel[label][0];
+			upDateBlobs(blobs, j,i,label);
+			/*clrPtr[j][0] = label<<1&0xff;
+			clrPtr[j][1] = label<<2&0xff;
+			clrPtr[j][2] = label<<7;*/
+
 		}
 	}
-	 
-
+	//imwrite("..\\sample\\result\\equal.bmp", colorLabelMat);
+	/*cout<<"blob counts: "<<blobs.size()<<endl;
+	vector<cnnBlob>::iterator iter = blobs.begin();
+	int i =0;
+	for(; iter!=blobs.end(); iter++, i++)
+	{
+	if(iter->blob_pts.size()<1000)
+	continue;
+	cout<<"blob_index_"<<i<<" size:"<<iter->blob_pts.size()<<endl;
+	}
+	*/
+	if(bVisitFlag)
+		delete [] bVisitFlag;
+	bVisitFlag = NULL;
 	return 0;
 }
 
@@ -187,6 +207,62 @@ bool upDateEqualLabel(vector<vector<int>>&equalLabel, vector<int>neighborLabel, 
 		}
 		if(i>=equalLabel[minLabel].size())
 			equalLabel[minLabel].push_back(ngb_label);
+	}
+	return true;
+}
+bool upDateBlobs(vector<cnnBlob>&blobs, const int i, const int j, const int label_index)
+{
+	if(label_index == 0)
+		return true;
+	if(blobs.size() == 0)
+	{
+		cnnBlob oneBlob;
+		oneBlob.label = label_index;
+		oneBlob.blob_pts.push_back(cvPoint(i,j));
+		blobs.push_back(oneBlob);
+		return true;
+	}
+	vector<cnnBlob>::iterator iter = blobs.begin();
+	for(; iter!=blobs.end(); iter++)
+	{
+		if(label_index == iter->label)
+		{
+			iter->blob_pts.push_back(cvPoint(i,j));
+			return true;
+		}
+	}
+	if(iter == blobs.end())
+	{
+		cnnBlob oneBlob;
+		oneBlob.label = label_index;
+		oneBlob.blob_pts.push_back(cvPoint(i,j));
+		blobs.push_back(oneBlob);
+	}
+	return true;
+}
+
+//递归算法标注equal连通域
+TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitFlag, const int equal_index, const int set_label)
+{
+	//递归遍历equalLabel
+	
+	if(equalLabel.size()<=0|| equal_index<0 || set_label<0)
+	{
+		return false;
+	}
+	if(bVisitFlag[equal_index])
+	{
+		if(set_label>equalLabel[equal_index][0])                               //如果set_label的值大于equal_index对应的0值         
+		{
+            equalLabel[set_label][0] = equalLabel[equal_index][0];             //把equalIndex的值赋给set_label
+		}
+		return true;
+	}
+	equalLabel[equal_index][0] = set_label;
+	bVisitFlag[equal_index] = true;
+	for(int i =0; i<equalLabel[equal_index].size(); i++)
+	{
+		secondPass(equalLabel, bVisitFlag, equalLabel[equal_index][i], set_label);
 	}
 	return true;
 }
