@@ -356,42 +356,89 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 
 	 dft(complexI, complexI);  
 
-	 split(complexI, planes);
+	// split(complexI, planes);
 
-	 magnitude(planes[0], planes[1], planes[0]);
-	 _magnImg = planes[0];
+	// magnitude(planes[0], planes[1], planes[0]);
+	// _magnImg = planes[0];
 
-	 _magnImg+=Scalar::all(1);
-	 log(_magnImg,_magnImg);
+	// _magnImg+=Scalar::all(1);
+	// log(_magnImg,_magnImg);
 
-	 //在上面的步骤中我们进行了边界填充，所以后面的步骤中，我们需要进行CROP
-	 //同时为了可视化，我们需要进行rearrange的操作，让图像的起点回到图像的中心位置显示
+	// //在上面的步骤中我们进行了边界填充，所以后面的步骤中，我们需要进行CROP
+	// //同时为了可视化，我们需要进行rearrange的操作，让图像的起点回到图像的中心位置显示
 
-	 _magnImg = _magnImg(cvRect(0,0,_magnImg.cols & -2, _magnImg.rows & -2)); //-2= (0xfffffffe) //crop image
-
-
-	 int cx = _magnImg.cols >>1;
-	 int cy = _magnImg.rows >>1;
-
-	 Mat q0(_magnImg, Rect(0,0,cx,cy));
-	 Mat q1(_magnImg, Rect(cx,0,cx,cy));
-	 Mat q2(_magnImg, Rect(0,cy,cx,cy));
-	 Mat q3(_magnImg, Rect(cx,cy,cx,cy));
-
-	 Mat temp;
-	 q0.copyTo(temp);
-	 q3.copyTo(q0);
-	 temp.copyTo(q3);
-
-	 q1.copyTo(temp);
-	 q2.copyTo(q1);
-	 temp.copyTo(q2);
-
-	 normalize(_magnImg, _magnImg, 0, 1, CV_MINMAX);
+	// _magnImg = _magnImg(cvRect(0,0,_magnImg.cols & -2, _magnImg.rows & -2)); //-2= (0xfffffffe) //crop image
 
 
 
+	// //将频谱图像进行中心偏移        （-1）^(x+y)[坐标偏移公式]
+	// int cx = _magnImg.cols >>1;
+	// int cy = _magnImg.rows >>1;
 
-     int c;
+	// Mat q0(_magnImg, Rect(0,0,cx,cy));
+	// Mat q1(_magnImg, Rect(cx,0,cx,cy));
+	// Mat q2(_magnImg, Rect(0,cy,cx,cy));
+	// Mat q3(_magnImg, Rect(cx,cy,cx,cy));
+
+	// Mat temp;
+	// q0.copyTo(temp);
+	// q3.copyTo(q0);
+	// temp.copyTo(q3);
+
+	// q1.copyTo(temp);
+	// q2.copyTo(q1);
+	// temp.copyTo(q2);
+
+	// normalize(_magnImg, _magnImg, 0, 255, CV_MINMAX);
+
+	//imwrite("..\\sample\\result\\dct_magniute.bmp", _magnImg);
 
  }
+
+ //调用IPP进行FFT运算
+ void TESTALGORITHMS_API DFTtransform_Ex(const Mat _srcImg, Mat &_magnImg)
+ {
+	
+	 Mat padded;
+	 //int nMaxLength = _srcImg.cols>_srcImg.rows?_srcImg.cols:_srcImg.rows;
+	 int m = 1;
+	 int n = 1;
+	 int nOrderY = 0;
+	 int nOrderX =0;
+	 int nCols = _srcImg.cols;
+	 int nRows = _srcImg.rows;
+	 while (nCols!=0)
+	 {
+	     nCols >>= 1;
+		 n <<= 1;
+		 nOrderY++;
+	 }
+
+	 while (nRows!=0)
+	 {
+		 nRows >>= 1;
+		 m <<= 1;
+		 nOrderX++;
+	 }
+
+
+	//m = getOptimalDFTSize(_srcImg.rows);
+	//n = getOptimalDFTSize(_srcImg.cols);
+	
+	 copyMakeBorder(_srcImg, padded, 0, m-_srcImg.rows, 0, n-_srcImg.cols, BORDER_CONSTANT, Scalar(0));
+
+	 Mat timeMat = Mat_<float>(padded);
+	 Mat freMat = Mat(padded.size(), CV_32FC1, Scalar(0));
+
+
+	// IplImage* pAlignDown=pAppearanceData->m_pAppearanceImage[SurfaceAppearanceImage_Align_DownSample];
+	
+	 IppiFFTSpec_R_32f*spec;
+	 ippiFFTInitAlloc_R_32f( &spec, nOrderX, nOrderY, IPP_FFT_DIV_INV_BY_N, ippAlgHintAccurate);
+
+	 ippiFFTFwd_RToPack_32f_C1R((Ipp32f*)(timeMat.data), n*sizeof(Ipp32f),(Ipp32f*)(freMat.data),n*sizeof(Ipp32f),spec,0);
+	 int a =0;
+ }
+
+ //从时间效率上来看OPENCV做FFT的时间比IPP更短，因为OPENCV模块会自动加载IPP模块
+

@@ -1,6 +1,7 @@
 #pragma  once
 #include"opencv2/opencv.hpp"
 #include<iostream>
+#include"ippi.h"
 
 #ifdef TESTALGORITHMS_EXPORTS
 #define TESTALGORITHMS_API __declspec(dllexport)
@@ -55,6 +56,9 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 void TESTALGORITHMS_API icvprCcaBySeedFill(const Mat& _binImg, Mat& _lableImg);
 
 /*/////////////////////////////////////////////////////////////////////////
-DFT变换
+DFT变换   OPENCV函数实现
 /////////////////////////////////////////////////////////////////////////*/
 void TESTALGORITHMS_API DFTtransform(const Mat _srcImg, Mat& _magnImg);
+
+
+void TESTALGORITHMS_API DFTtransform_Ex(const Mat _srcImg, Mat &_magnImg);
