@@ -62,3 +62,6 @@ void TESTALGORITHMS_API DFTtransform(const Mat _srcImg, Mat& _magnImg);
 
 
 void TESTALGORITHMS_API DFTtransform_Ex(const Mat _srcImg, Mat &_magnImg);
+
+void TESTALGORITHMS_API convolveDFT(Mat _inputImg, Mat _kernel, Mat& _outImg);
+void TESTALGORITHMS_API convolveTIME(Mat _inputImg, Mat _kernel, Mat& _outImg);

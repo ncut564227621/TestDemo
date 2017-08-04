@@ -8,7 +8,7 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat img = imread("..\\Sample\\barbara.bmp",CV_LOAD_IMAGE_GRAYSCALE);
+	Mat img = imread("..\\Sample\\barbara.bmp",CV_LOAD_IMAGE_GRAYSCALE);//image size:720*580 px
 
 	/*vector<vector<int>>equal_label;
 
@@ -61,17 +61,34 @@ int _tmain(int argc, _TCHAR* argv[])
 	int set_label = equal_label[i][0];
 	secondPass(equal_label, bVisitFlag, i, set_label);
 	}*/
+	Mat flImg = Mat_<float>(img);
+
+	Mat fKernel = (Mat_<float>(3,3)<< -1,-2,-1,   //sobel_x Ыузг
+		                               0,0,0,
+								        1,2,1);
+
+	Mat flipKernel(fKernel.size(), fKernel.type(), Scalar(0));	
 	
 	for(int i =0; i<10; i++)
 	{
 		Mat inImg = img.clone();
 		Mat magnImg;
+		Mat _outImg(img.size(), CV_32FC1, Scalar(0));
 		const int64 nStart = getTickCount();
 
-		DFTtransform_Ex(img,   magnImg);
+		//DFTtransform_Ex(img,   magnImg
+		//convolveDFT(flImg, fKernel, _outImg);
+		//flip(fKernel, flipKernel, -1);
+		//filter2D(img, _outImg,_outImg.depth(),  flipKernel);
+
+		convolveTIME(img, fKernel, _outImg);
 
 		double nDuration = (getTickCount() - nStart)/getTickFrequency();
 		cout<<"cost time: "<<nDuration*1000<<"ms"<<endl;
+
+		normalize(_outImg, _outImg, 0, 255, CV_MINMAX);
+		imwrite("..\\sample\\result\\convolveTIME.BMP", _outImg);
+		int a =0;
 	}
 
 	return 0;

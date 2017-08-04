@@ -442,3 +442,75 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 
  //从时间效率上来看OPENCV做FFT的时间比IPP更短，因为OPENCV模块会自动加载IPP模块
 
+
+ void TESTALGORITHMS_API convolveDFT(Mat _inputImg, Mat _kernel, Mat& _outImg)
+ {
+	 if(_inputImg.empty()||_kernel.empty())
+	 {
+	       cout<<"some error in input image and kernel image"<<endl;
+	 }
+	 _outImg.create(abs(_inputImg.rows - _kernel.rows)+1, abs(_inputImg.cols-_kernel.cols)+1, _inputImg.type());
+
+	 Size dftSize;
+	 dftSize.width = getOptimalDFTSize(_inputImg.cols+_kernel.cols -1);
+	 dftSize.height = getOptimalDFTSize(_inputImg.rows+_kernel.rows-1);
+
+	 Mat tempA(dftSize, _inputImg.type(), Scalar::all(0));
+	 Mat tempB(dftSize, _kernel.type(), Scalar::all(0));
+
+	 Mat roiA(tempA, Rect(0,0,_inputImg.cols, _inputImg.rows));
+	 _inputImg.copyTo(roiA);
+
+	 Mat roiB(tempB, Rect(0,0,_kernel.cols, _kernel.rows));
+	 _kernel.copyTo(roiB);
+
+	 dft(tempA, tempA, 0,  _inputImg.rows);
+	 dft(tempB, tempB, 0, _kernel.rows);
+
+	 mulSpectrums(tempA, tempB, tempA, 0);
+
+	 dft(tempA, tempA, DFT_INVERSE+DFT_SCALE, _outImg.rows);
+	
+
+	 tempA(Rect(0,0,_outImg.cols,_outImg.rows)).copyTo(_outImg);
+ }
+
+ void TESTALGORITHMS_API convolveTIME(Mat _inputImg, Mat _kernel, Mat& _outImg)
+ {
+	 if(_inputImg.empty()||_kernel.empty())
+	 {
+		 cout<<"some error in input image and kernel image"<<endl;
+	 }
+	 _outImg.create(_inputImg.size(), CV_32FC1);
+	 
+	 int inRows = _inputImg.rows;
+	 int inCols = _inputImg.cols;
+
+	 int keRows = _kernel.rows;
+	 int keCols = _kernel.cols;
+
+	 int outRows = _outImg.rows;
+	 int outCols = _outImg.cols;
+
+
+	 for( int i =(keRows+1)/2; i<inRows-((keRows+1)/2); i++)
+	 {
+		
+		 float* outPtr = _outImg.ptr<float>(i);
+		 for(int j =(keCols+1)/2; j<inCols-((keCols+1)/2); j++)
+		 {
+			float convSum =0.0f;
+			 for(int kr = 0; kr<keRows; kr++)
+			 {
+				 uchar* inPtr = _inputImg.ptr<uchar>(i-(keRows+1)/2+kr);
+				 float* kePtr = _kernel.ptr<float>(kr);
+				 for(int kc =0; kc<keCols; kc++)
+				 {
+					 convSum+=kePtr[kc]*inPtr[j-(keCols+1)/2+kc];
+				 }
+			 }
+			 outPtr[j] = convSum;
+		 }
+	 }
+ }
+
