@@ -71,7 +71,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	for(int i =0; i<10; i++)
 	{
-		Mat inImg = img.clone();
+		Mat inImg(img.size(), CV_8UC1, Scalar(0));
 		Mat magnImg;
 		Mat _outImg(img.size(), CV_32FC1, Scalar(0));
 		const int64 nStart = getTickCount();
@@ -81,7 +81,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		//flip(fKernel, flipKernel, -1);
 		//filter2D(img, _outImg,_outImg.depth(),  flipKernel);
 
-		convolveTIME(img, fKernel, _outImg);
+		//convolveTIME(img, fKernel, _outImg);
+		optimizeMedianBlur(img, inImg, 3, 3);
 
 		double nDuration = (getTickCount() - nStart)/getTickFrequency();
 		cout<<"cost time: "<<nDuration*1000<<"ms"<<endl;

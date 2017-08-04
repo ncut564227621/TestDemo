@@ -514,3 +514,142 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 	 }
  }
 
+
+ void optimizeMedianBlur(Mat _inImg, Mat& _outImg, const int kernel_w, const int kernel_h)
+ {
+	   Mat padded;
+	  copyMakeBorder(_inImg, padded, (kernel_h+1)/2, (kernel_h+1)/2, (kernel_w+1)/2, (kernel_w+1)/2, BORDER_CONSTANT);
+
+	  
+
+	  int inRows = padded.rows;
+	  int inCols = padded.cols;
+
+	  int keRows = kernel_h;
+	  int keCols = kernel_w;
+
+	  int outRows = _outImg.rows;
+	  int outCols = _outImg.cols;
+
+	  uchar ucMed = 0;
+
+	  int nthd = (keCols * keRows)/2+1;
+	  int medNum = 0;
+
+
+
+	  for(int i = (keRows+1)/2; i<inRows - (keRows+1)/2; i++)//行
+	  {
+		 if(i -(keRows+1)/2<0||i -(keRows+1)/2>outRows-1)
+			 continue;
+		  float* outPtr = _outImg.ptr<float>(i -(keRows+1)/2);
+		  int hist[256] = {0};
+		  bool bBeignNewRow = true;
+		  medNum =0;
+		  ucMed =0;
+		 // cout<<"************beign new row start**************"<<endl;
+		  for(int j =(keCols+1)/2; j<inCols-((keCols+1)/2); j++)//列
+		  {
+			  
+			  if(bBeignNewRow) //每次重新开始一行的时候重新计算
+			  {
+				  for(int kr = 0; kr<keRows; kr++)
+				  {
+					  uchar* inPtr = padded.ptr<uchar>(i-(keRows+1)/2+kr);
+					  for(int kc =0; kc<keCols; kc++)
+					  {
+						  hist[inPtr[j-(keCols+1)/2+kc]]++;
+					  }
+				  }
+			  }
+			  else
+			  {
+				   //最右侧列像素值
+				  for(int kr = 0; kr<keRows; kr++)
+				  {
+					  uchar* inPtr = padded.ptr<uchar>(i-(keRows+1)/2+kr);
+					  int rkc= keCols-1;
+					   uchar rightVal = inPtr[j-(keCols+1)/2+rkc];
+					   hist[rightVal] = hist[rightVal]+1;
+					   if(rightVal<=ucMed)
+						   medNum = medNum+1;
+					  //grc.push_back(rightVal);
+
+				  }
+			    
+				  //更新hist，增加最右侧列
+				  /*  vector<uchar>::iterator iter = grc.begin();
+				  for(;iter<grc.end(); iter++)
+				  {
+				  uchar rightVal = *iter;
+				  hist[rightVal] = hist[rightVal]+1;
+				  if(rightVal<=ucMed)
+				  medNum = medNum+1;
+				  }*/
+
+			  }
+			  //计算中值
+			  if(medNum<=nthd)
+			  {
+				  for(ucMed= ucMed+1; ucMed<256; ucMed++)
+				  {
+					  medNum+=hist[ucMed];
+					  if(medNum>=nthd)
+					  {
+						  break;
+					  }	
+				  }
+			  }
+			  else
+			  {
+
+				  for(;ucMed>0; ucMed--)
+				  {
+					  if(ucMed == 0)
+						  break;
+					  medNum-=hist[ucMed-1];
+					  if(medNum<=nthd)
+					  {
+						  break;
+					  }
+					  if(medNum<0)
+						  medNum =0;
+				  }
+			  }
+			  
+
+			  if(j -(keCols+1)/2<0||i -(keCols+1)/2>outCols-1)
+				  continue;
+			  outPtr[j -(keCols+1)/2]  = ucMed;
+
+			 // cout<<"    2.delete left cols in hist"<<endl;
+			 //处理最左侧像素
+			  //vector<uchar>glc; //最左侧列像素值
+			  for(int kr = 0; kr<keRows; kr++)
+			  {
+				  uchar* inPtr = padded.ptr<uchar>(i-(keRows+1)/2+kr);
+				  int lkc =0;
+				  uchar leftVal = inPtr[j-(keCols+1)/2+lkc];
+				  hist[leftVal] = hist[leftVal]-1;
+				  if(leftVal<=ucMed)
+					  medNum = medNum-1;
+				 // glc.push_back(inPtr[j-(keCols+1)/2+lkc]);
+
+			  }
+			  ////去掉左侧,更新hist
+			  //vector<uchar>::iterator iter = glc.begin();
+			  //for(;iter<glc.end(); iter++)
+			  //{
+				 // uchar leftVal = *iter;
+				 // hist[leftVal] = hist[leftVal]-1;
+				 // if(leftVal<=ucMed)
+					//  medNum = medNum-1;
+			  //}
+			  
+			  bBeignNewRow = false;
+		  }
+
+	  }
+
+ }
+
