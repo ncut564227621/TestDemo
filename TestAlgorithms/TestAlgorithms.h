@@ -103,3 +103,16 @@ void TESTALGORITHMS_API convolveTIME(Mat _inputImg, Mat _kernel, Mat& _outImg);
 
 void TESTALGORITHMS_API optimizeMedianBlur(Mat _inImg, Mat& _outImg, const int kernel_w, const int kernel_h);
 
+//otsu算法的思想，实际上是求使类间方差最大化的时候的二值化阈值
+void TESTALGORITHMS_API otsuThreshold(Mat _inImg, Mat & _outImg, uchar& ucThd);
+
+//wellner二值化算法：
+/*
+//基本思想是:
+    1. 求局部像素的滑动平均值 m
+	2. 如果当前像素的值，明显低于滑动平均值，则，该像素置为0，否则255
+
+*/
+void TESTALGORITHMS_API wellnerThreshold(Mat _inImg, Mat& _outImg, const int nRadius, const int nRatio);
+
+void TESTALGORITHMS_API wellnerThresholdEx(unsigned char* input, unsigned char*& bin, int width, int height);

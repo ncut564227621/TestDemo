@@ -635,3 +635,169 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 
  }
 
+ void  TESTALGORITHMS_API otsuThreshold(Mat _inImg, Mat & _outImg, uchar& ucThd)
+ {
+	 if(_inImg.empty())
+	 {
+		 cout<<"some error in input image"<<endl;
+		 return;
+	 }
+	 int hist[256] ={0};
+	 int nRows = _inImg.rows;
+	 int nCols = _inImg.cols;
+	 int Total_sum =0;
+	 for(int i = 0; i<nRows; i++)
+	 {
+		 uchar* ptr = _inImg.ptr<uchar>(i);
+		 for(int j =0; j<nCols; j++)
+		 {
+			 hist[ptr[j]]++;
+			 Total_sum+=ptr[j];
+		 }
+	 }
+	 //
+	 //设定初始的分割阈值；
+	 int pixelArea = nRows*nCols;
+	 float fW_back_Ration =0.0f, fW_fore_ratio =0.0f;
+	 int Ave_back = 0, Ave_fore =0;
+	 int back_counts =0, fore_counts =0;
+	 float fvariation_between = 0.0f;
+
+	 float fMax_variation_between =0.0f;
+
+	 int Back_Sum =0;
+	 int Fore_sum =Total_sum;
+	
+	 
+
+	 for(int ucTempThd =0; ucTempThd<256; ucTempThd++)
+	 {
+		 if(ucTempThd == 100)
+			 int a =0;
+		 back_counts+=hist[ucTempThd];
+		 fore_counts = pixelArea - back_counts;
+
+		 Back_Sum+=ucTempThd*hist[ucTempThd];
+		 Fore_sum = Total_sum - Back_Sum;
+
+		 fW_back_Ration = back_counts*1.0/pixelArea;
+		 fW_fore_ratio = fore_counts*1.0/pixelArea;
+
+		 if(back_counts==0)
+			 continue;
+		 Ave_back = Back_Sum/back_counts;
+		 if(fore_counts==0)
+			 continue;
+		  Ave_fore = Fore_sum/fore_counts;
+
+		 fvariation_between = fW_fore_ratio*fW_back_Ration*(Ave_back-Ave_fore)*(Ave_back-Ave_fore);
+		 if(fvariation_between>fMax_variation_between)
+		 {
+		      fMax_variation_between = fvariation_between;
+			  ucThd = (uchar)ucTempThd;
+			  if(ucTempThd == 236)
+			  {
+				  int a= 0;
+			  }
+		 }
+		  //threshold(_inImg, _outImg, ucThd, 255, CV_THRESH_BINARY);
+		  //int a=0;
+	 }
+	 threshold(_inImg, _outImg, ucThd, 255, CV_THRESH_BINARY);
+	 return ;
+ }
+
+ void TESTALGORITHMS_API wellnerThreshold(Mat _inImg, Mat& _outImg, const int nRadius, const int nRatio)
+ {
+	 if(_inImg.empty())
+	 {
+		 cout<<"some error in input image"<<endl;
+		 return;
+	 }
+	 Mat Blur(_inImg.size(), CV_32FC1);
+	 Mat kernel = Mat::ones(nRadius, nRadius, CV_8UC1);
+	 filter2D(_inImg, Blur, Blur.depth(), kernel);
+	 int nWindowSize = nRadius*nRadius;
+	 float factor = (100-nRatio)*1.0f/100;
+	 
+	// Blur = Blur/(nRadius*nRadius);
+	 int nRows = Blur.rows;
+	 int nCols = Blur.cols;
+	 for(int i =0; i<nRows; i++)
+	 {
+		 float * blur_ptr = Blur.ptr<float>(i);
+		 uchar * in_ptr = _inImg.ptr<uchar>(i);
+		 uchar * out_ptr = _outImg.ptr<uchar>(i);
+		 for(int j =0; j<nCols; j++)
+		 {
+			 int  inPixelVal = in_ptr[j]*(nWindowSize);
+			 if(inPixelVal<=(blur_ptr[j]*(factor)))
+			 {
+				 out_ptr[j] = 0;
+			 }
+			 else
+			 {
+				 out_ptr[j] = 0xff;
+			 }
+		 }
+	 }
+ }
+
+ void TESTALGORITHMS_API wellnerThresholdEx(unsigned char* input, unsigned char*& bin, int width, int height)
+ {
+	 int S = width >> 3;
+	 int T = 15;
+
+	 unsigned long* integralImg = 0;
+	 int i, j;
+	 long sum=0;
+	 int count=0;
+	 int index;
+	 int x1, y1, x2, y2;
+	 int s2 = S/2;
+
+	 bin = new unsigned char[width*height];
+	 // create the integral image
+	 integralImg = (unsigned long*)malloc(width*height*sizeof(unsigned long*));
+	 for (i=0; i<width; i++)
+	 {
+		 // reset this column sum
+		 sum = 0;
+		 for (j=0; j<height; j++)
+		 {
+			 index = j*width+i;
+			 sum += input[index];
+			 if (i==0)
+				 integralImg[index] = sum;
+			 else
+				 integralImg[index] = integralImg[index-1] + sum;
+		 }
+	 }
+	 // perform thresholding
+	 for (i=0; i<width; i++)
+	 {
+		 for (j=0; j<height; j++)
+		 {
+			 index = j*width+i;
+			 // set the SxS region
+			 x1=i-s2; x2=i+s2;
+			 y1=j-s2; y2=j+s2;
+			 // check the border
+			 if (x1 < 0) x1 = 0;
+			 if (x2 >= width) x2 = width-1;
+			 if (y1 < 0) y1 = 0;
+			 if (y2 >= height) y2 = height-1;
+			 count = (x2-x1)*(y2-y1);
+			 // I(x,y)=s(x2,y2)-s(x1,y2)-s(x2,y1)+s(x1,x1)
+			 sum = integralImg[y2*width+x2] -
+				 integralImg[y1*width+x2] -
+				 integralImg[y2*width+x1] +
+				 integralImg[y1*width+x1];
+			 if ((long)(input[index]*count) < (long)(sum*(100-T)/100))
+				 bin[index] = 0;
+			 else
+				 bin[index] = 255;
+		 }
+	 }
+	 free (integralImg);
+ }
