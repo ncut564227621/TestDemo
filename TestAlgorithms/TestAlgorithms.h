@@ -102,3 +102,4 @@ void TESTALGORITHMS_API convolveTIME(Mat _inputImg, Mat _kernel, Mat& _outImg);
 */
 
 void TESTALGORITHMS_API optimizeMedianBlur(Mat _inImg, Mat& _outImg, const int kernel_w, const int kernel_h);
+
