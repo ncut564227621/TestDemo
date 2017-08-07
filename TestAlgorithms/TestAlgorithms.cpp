@@ -801,3 +801,88 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 	 }
 	 free (integralImg);
  }
+ void TESTALGORITHMS_API sobelGradient(Mat _inImg, Mat& grad)
+ {
+	 if(_inImg.empty())
+	 {
+		 cout<<"some error in input image"<<endl;
+		 return;
+	 }
+	 grad = Mat(_inImg.size(), CV_32FC1, Scalar(0));
+	 /*
+	 Mat sobel_x = (Mat_<int>(3,3)<<-1,0,1,
+		                             -2,0,2,
+									 -1,0,1);
+	 Mat sobel_y = (Mat_<int>(3,3)<<-1,-2,-1,
+		                             0, 0, 0,
+									 1, 2, 1);
+									 */
+	 Mat grad_x, grad_y;
+	 Mat absGradx, absGrady;
+	 Sobel(_inImg, grad_x, CV_32F,1,0);
+	 convertScaleAbs(grad_x, absGradx);
+
+	 Sobel(_inImg, grad_y, CV_32F,0,1);
+	 convertScaleAbs(grad_y, absGrady);
+
+	 addWeighted(absGradx,0.5,absGrady,0.5,0,grad);
+
+ }
+
+ //Gabor Filter
+ TESTALGORITHMS_API bool Common_Creat_GaborFilter(const int nGaborW, const int nGaborH, const float dFre, const double dSigma, const double dTheta, const double dGamma,const int nPsi, Mat &RealGaborFilter,Mat& ImaginaryGaborFilter)
+ {
+	 if(RealGaborFilter.empty())
+	 {
+		 RealGaborFilter = Mat(Size(nGaborW, nGaborH), CV_32FC1, Scalar(0));
+	 }
+	 if(ImaginaryGaborFilter.empty())
+	 {
+		 ImaginaryGaborFilter = Mat(Size(nGaborW, nGaborH), CV_32FC1, Scalar(0));
+
+	 }
+	 
+
+	 float fTemp1=0.0f, fTemp2=0.0f, fTemp3=0.0f, fTemp4=0.0f;
+	 double dCosVal=cos(dTheta*CV_PI/180);
+	 double dSinVal=sin(dTheta*CV_PI/180);
+	 float fGaborRealMean=0.0,fGaborImaginaryMean=0.0;
+
+	 for(int i=0; i<=nGaborH-1; i++)
+	 {
+		float* real_Ptr = RealGaborFilter.ptr<float>(i);
+		float* im_Ptr = ImaginaryGaborFilter.ptr<float>(i);
+
+		 for(int j=0; j<=nGaborW-1; j++)
+		 {
+			 int x=j-(nGaborW-1)/2;
+			 int y=i-(nGaborH-1)/2;
+
+			 fTemp1=(float)(x*dCosVal+y*dSinVal);
+			 fTemp2=(float)(-x*dSinVal+y*dCosVal);
+			 fTemp3=(float)(exp(-(pow(fTemp1,2)+dGamma*pow(fTemp2,2))/(2*dSigma*dSigma))*cos(2*CV_PI*dFre*fTemp1+nPsi));
+			 fTemp4=(float)(exp(-(pow(fTemp1,2)+dGamma*pow(fTemp2,2))/(2*dSigma*dSigma))*sin(2*CV_PI*dFre*fTemp1+nPsi));
+			
+			 real_Ptr[j]=fTemp3;
+			 fGaborRealMean+=(fTemp3);
+			 im_Ptr[j]=fTemp4;
+			 fGaborImaginaryMean+=(fTemp4);
+		 }
+	 }
+	 //减掉均值，是为了在平滑区域，Gabor输出为0
+	 fGaborRealMean=fGaborRealMean/(nGaborW*nGaborH);
+	 fGaborImaginaryMean=fGaborImaginaryMean/(nGaborH*nGaborW);
+
+	 for(int i=0; i<=nGaborH-1; i++)
+	 {
+		 float* real_Ptr = RealGaborFilter.ptr<float>(i);
+		 float* im_Ptr = ImaginaryGaborFilter.ptr<float>(i);
+		 for(int j=0; j<=nGaborW-1; j++)
+		 {
+			real_Ptr[j]-= fGaborRealMean;
+			im_Ptr[j] -= fGaborImaginaryMean;
+		 }
+	 }
+
+	 return TRUE;
+ }

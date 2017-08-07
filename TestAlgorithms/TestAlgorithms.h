@@ -116,3 +116,20 @@ void TESTALGORITHMS_API otsuThreshold(Mat _inImg, Mat & _outImg, uchar& ucThd);
 void TESTALGORITHMS_API wellnerThreshold(Mat _inImg, Mat& _outImg, const int nRadius, const int nRatio);
 
 void TESTALGORITHMS_API wellnerThresholdEx(unsigned char* input, unsigned char*& bin, int width, int height);
+
+//利用OPENCV求sobel近似梯度图像
+void TESTALGORITHMS_API sobelGradient(Mat _inImg, Mat& grad);
+
+
+//利用Gabor滤波器提取图像的方向梯度算法
+/*
+构造Gabor Filter
+nGaborW:滤波器模板的宽
+nGaborH:滤波器模板的高
+dFre:   要求筛选的中心频率
+dSigma: 滤波器的宽度，值越大，滤波器越宽，值越小，滤波器带宽越小
+dGamma: 滤波器x和y两个空间方向的比率
+nPsi:   设置的相位偏差
+*/
+
+TESTALGORITHMS_API bool Common_Creat_GaborFilter(const int nGaborW, const int nGaborH, const float dFre, const double dSigma, const double dTheta, const double dGamma,const int nPsi, Mat &RealGaborFilter,Mat& ImaginaryGaborFilter);
