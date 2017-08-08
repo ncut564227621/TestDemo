@@ -886,3 +886,102 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 
 	 return TRUE;
  }
+ TESTALGORITHMS_API void lineDetect(Mat _inImg, Mat& _outImg, vector<Vec2f>vecLineParams, const int _lineDetectType)
+ {
+	//#define DRAW_HOUGH_LINES 
+	 Mat edgeMat;
+	 vector<Vec4i> vecProbaLinesParams;
+	 Canny(_inImg, edgeMat, 50, 150);
+	 _outImg = edgeMat.clone();
+
+	 switch (_lineDetectType)
+	 {
+	 case Hogh_Stand:
+		  HoughLines(edgeMat,vecLineParams, 1,CV_PI/90, 50);
+		 break;
+	 case Hough_Pro:
+		 HoughLinesP(edgeMat,vecProbaLinesParams, 1, CV_PI/180, 10, 10, 5);
+		 break;
+	 case Hogh_MultScale:
+		  HoughLines(edgeMat,vecLineParams, 1,CV_PI/90, 50, 2.0,2.0);
+		 break;
+	 case LSD:
+		 break;
+	 default:
+		 break;
+	 }
+	 //
+
+#ifdef DRAW_HOUGH_LINES
+	 int nCols = edgeMat.cols;
+	 int nRows = edgeMat.rows;
+
+	 if(_lineDetectType==Hough_Pro)
+	 {
+		 for(int i =0; i<vecProbaLinesParams.size(); i++)
+		 {
+			 if(vecProbaLinesParams.size()>1)
+			 {
+				 for(int k =0; k<vecProbaLinesParams.size(); k++)
+				 {
+					 Point pt1, pt2;
+					 pt1.x =vecProbaLinesParams[k][0];
+					 pt1.y = vecProbaLinesParams[k][1];
+
+					 pt2.x = vecProbaLinesParams[k][2];
+					 pt2.y = vecProbaLinesParams[k][3];
+
+					 line(_inImg,pt1,pt2,Scalar(255,0,0));
+				 }
+			 }
+
+		 }
+	 }
+	 else
+	 {
+		 for(int i =0; i<vecLineParams.size(); i++)
+		 {
+			 float fRho = vecLineParams[i][0];
+			 float fTheta = vecLineParams[i][1];
+
+			 vector<Vec2i> vecLineCoordinates;
+			 for(int rw =0; rw<nRows; rw++)
+			 {
+				 uchar* ptr = edgeMat.ptr<uchar>(rw);
+				 for(int cl =0; cl<nCols; cl++)
+				 {
+					 if(ptr[cl]!=0)
+					 {
+						 float fcurRho  = cl*cos(fTheta)+rw*sin(fTheta);
+						 if(fabs(fcurRho - fRho)<=1)
+						 {
+							 Vec2i pts; 
+							 pts[0] = cl;
+							 pts[1] = rw;
+							 vecLineCoordinates.push_back(pts);
+						 }
+					 }
+				 }
+			 }
+			 if(vecLineCoordinates.size()>1)
+			 {
+				 for(int k =1; k<vecLineCoordinates.size(); k++)
+				 {
+					 Point pt1, pt2;
+					 pt1.x =vecLineCoordinates[k-1][0];
+					 pt1.y = vecLineCoordinates[k-1][1];
+
+					 pt2.x = vecLineCoordinates[k][0];
+					 pt2.y = vecLineCoordinates[k][1];
+
+					 line(_inImg,pt1,pt2,Scalar(255,0,0));
+				 }
+			 }
+
+		 }
+	 }
+	
+	 imwrite("..\\sample\\result\\detect_line.bmp", _inImg);
+#endif
+
+ }

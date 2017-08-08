@@ -5,12 +5,13 @@
 #include"opencv2/opencv.hpp"
 #include "../TestAlgorithms/TestAlgorithms.h"
 #include<string>
+#include "lsd.h"
 
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat img = imread("..\\Sample\\lena.bmp",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
+	Mat img = imread("..\\Sample\\build.jpg",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
 
 	Mat _inImg(img.size(), CV_8UC1, Scalar(0));
 	Mat _outImg(img.size(), CV_8UC1, Scalar(0));
@@ -28,61 +29,25 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		  _inImg = img.clone();
 	}
+	
 
-	Mat filterMat = Mat(img.size(), CV_32FC1, Scalar(0));
-
-	//gabor 滤波器
-
-	double orientArray[4] = {0, 45,90, 135};
-	//设置gabor 滤波器参数；
-	int nGaborW = 100, nGaborH =100;
-	float dFre = 0.05; //一个周期20个像素
-	double dSigma = 10,dTheta = 45, dGamma =1.0;
-    const int nPsi = 1;
-	Mat RealGaborFilter,ImaginaryGaborFilter;
-	string csFilePath = "..\\sample\\result\\Gabor\\";
-	for(int i = 0; i<4; i++)
-	{
-		stringstream strStream;
-		string csRealGabor;
-		string csImGabor;
-		string csGaborName ="GaborFilter_";
-		dTheta = orientArray[i];
-
-		strStream<<dTheta<<"_";
-		csGaborName+=strStream.str();
-		Common_Creat_GaborFilter(nGaborW, nGaborH, dFre, dSigma, dTheta, dGamma, nPsi, RealGaborFilter, ImaginaryGaborFilter);
-		csRealGabor+=csGaborName;
-		csRealGabor+="Real.bmp";
-		csImGabor += csGaborName;
-		csImGabor+="Im.bmp";
-
-		filter2D(_inImg, filterMat, CV_32F, RealGaborFilter);
-
-		//normalize(RealGaborFilter, RealGaborFilter, 0,255, CV_MINMAX);
-		normalize(filterMat, filterMat,0,255, CV_MINMAX);
-
-		//imwrite(csFilePath+csRealGabor, RealGaborFilter);
-		//imwrite(csFilePath+csImGabor, ImaginaryGaborFilter);
-		imwrite("..\\sample\\result\\Gabor_Filter.bmp", filterMat);
-
-		int a =0;
-		
-	}
-
-	return 0;
+	
 
 	for(int i =0; i<10; i++)
 	{
-
+		
+	   Ptr<	LineSegmentDetector> pLsd = createLineSegmentDetector(LSD_REFINE_NONE,0.8,0.6,2.0,22.5,0,0.7,1024);
+		vector<Vec4i>vecLinesParams;
 		const int64 nStart = getTickCount();
 
 		//to do something;
-	
+		
+	     pLsd->detect(_inImg, vecLinesParams);
+		 pLsd->drawSegments(img, vecLinesParams); //
+
 		double nDuration = (getTickCount() - nStart)/getTickFrequency();
 		cout<<"cost time: "<<nDuration*1000<<"ms"<<endl;
-
-		imwrite("..\\sample\\result\\sobel_3x3.bmp", _outImg);
+		imwrite("..\\sample\\result\\opencv_lsd_line.bmp", img);
 		int a =0;
 	}
 

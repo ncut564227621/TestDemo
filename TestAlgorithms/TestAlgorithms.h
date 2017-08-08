@@ -18,6 +18,14 @@ typedef struct tagcnnBlob
 	vector<Point>blob_pts;
 }cnnBlob;
 
+enum LineDetectType
+{
+	Hogh_Stand,
+	Hogh_MultScale,
+	Hough_Pro,
+	LSD,
+};
+
 TESTALGORITHMS_API int DetectConnFindContours(Mat grayImg, vector<vector<Point>>&contours, const uchar threshold, const bool bInverse);
 TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours);
 
@@ -133,3 +141,11 @@ nPsi:   设置的相位偏差
 */
 
 TESTALGORITHMS_API bool Common_Creat_GaborFilter(const int nGaborW, const int nGaborH, const float dFre, const double dSigma, const double dTheta, const double dGamma,const int nPsi, Mat &RealGaborFilter,Mat& ImaginaryGaborFilter);
+
+
+//Hough_Line_Transformation
+/*
+
+*/
+
+TESTALGORITHMS_API void lineDetect(Mat _inImg, Mat& _outImg, vector<Vec2f>vecLineParams, const int _lineDetectType);
