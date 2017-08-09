@@ -25,6 +25,11 @@ enum LineDetectType
 	Hough_Pro,
 	LSD,
 };
+enum LineFitType
+{
+	Emulator_Fit,
+	RANSAC_Fit,
+};
 
 TESTALGORITHMS_API int DetectConnFindContours(Mat grayImg, vector<vector<Point>>&contours, const uchar threshold, const bool bInverse);
 TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours);
@@ -149,3 +154,24 @@ TESTALGORITHMS_API bool Common_Creat_GaborFilter(const int nGaborW, const int nG
 */
 
 TESTALGORITHMS_API void lineDetect(Mat _inImg, Mat& _outImg, vector<Vec2f>vecLineParams, const int _lineDetectType);
+
+
+//直线拟合
+struct SLine
+{
+	SLine():
+		numOfValidPoints(0),
+		params(-1.f, -1.f, -1.f, -1.f)
+	{}
+	Vec4f params;//(cos(t), sin(t), X0, Y0)
+	int numOfValidPoints;
+};
+
+TESTALGORITHMS_API void lineFit(Mat& _outImg, vector<Point>fitData, Vec4f&vecLineParams, const int _lineFitType);
+
+
+void RansancFit(vector<Point>fitData, Vec4f&vecLineParams);
+
+Vec4f TotalLeastSquares(vector<Point>& nzPoints, vector<int> ptOnLine);
+
+SLine LineFitRANSAC(float t, float p, float e, int T, vector<Point>& nzPoints);
