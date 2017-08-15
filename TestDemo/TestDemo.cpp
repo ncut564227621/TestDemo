@@ -7,12 +7,15 @@
 #include<string>
 #include "lsd.h"
 
+#include "CircleFitByHyper.h"
+
+
 void randomlineData(Mat& fitMap, vector<Point>& fitData, vector<Point>& fitData_2, const int ptNums);
 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat img = imread("..\\Sample\\build.jpg",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
+	Mat img = imread("..\\Sample\\hua.jpg",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
 
 	Mat _inImg(img.size(), CV_8UC1, Scalar(0));
 	Mat _outImg(img.size(), CV_8UC1, Scalar(0));
@@ -28,63 +31,28 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	else
 	{
-		  _inImg = img.clone();
+		_inImg = img.clone();
 	}
-	
-	Mat fitMap(img.size(), CV_8UC3, Scalar::all(50));
-	int ptsNum = 1000;
-	vector<Point>fitData_1;
-	vector<Point>fitData_2;
-
-	randomlineData(fitMap,fitData_1,fitData_2, ptsNum);
-	
-	imwrite("..\\sample\\result\\fitMap_raw_data.bmp",fitMap);
-
-	//ÏÈÄâºÏfitData_1
-	Vec4f lineParam;
-	lineFit(fitMap, fitData_1, lineParam, RANSAC_Fit);
-
-	Point pt1, pt2;
-	pt1.x = lineParam[2] - 300*lineParam[0];
-	pt1.y = lineParam[3]-  300*lineParam[1];
-
-	//
-	pt2.x = pt1.x + 500*lineParam[0];
-	pt2.y = pt1.y + 500*lineParam[1];
-
-	line(fitMap, pt1, pt2, Scalar(0,255,0),2);
-	
-
-	lineFit(fitMap, fitData_2, lineParam, RANSAC_Fit);
-	//ÄâºÏfitData_2
-	//fitLine(fitData_2, lineParam, CV_DIST_L2,0,0,0);
-
-	pt1.x = lineParam[2] - 200*lineParam[0];
-	pt1.y = lineParam[3]-  200*lineParam[1];
-
-	//
-	pt2.x = pt1.x + 500*lineParam[0];
-	pt2.y = pt1.y + 500*lineParam[1];
-
-	line(fitMap, pt1, pt2, Scalar(255,255,255),2);
 
 
-	imwrite("..\\sample\\result\\fitMap.bmp",fitMap);
-	
 
 	
-	int a =0;
 	for(int i =0; i<10; i++)
-	{
-		
-		const int64 nStart = getTickCount();
 
-		//to do something;
-	
+	{
+
+		const int64 nStart = getTickCount();
+		//to do something
+
 
 		double nDuration = (getTickCount() - nStart)/getTickFrequency();
+
 		cout<<"cost time: "<<nDuration*1000<<"ms"<<endl;
-		int a =0;
+
+
+	//	imwrite("..\\Sample\\result\\solve_fit_circle.bmp", plotMat);
+
+		//imwrite("..\\Sample\\result\\ransac_circle.bmp", img);
 	}
 
 	

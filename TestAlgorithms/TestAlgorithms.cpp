@@ -1135,3 +1135,663 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 	 }
  }
 
+ TESTALGORITHMS_API int circleDetect(Mat _inImg, Mat& _outImg, vector<Vec3f>&vecCircleParams, const int _circleDetectType)
+ {
+	double canny_threshold = 150;
+	double circle_threshold = 0.8;
+	int numIterations = 10000;
+	int index =-1;
+	circleRANSAC(_inImg, vecCircleParams, canny_threshold, circle_threshold,numIterations, index);
+	return index;
+ }
+
+ void circleRANSACEx(Mat &image, vector<Vec3f> &circles, double circle_threshold, int numIterations, int &nBiggestCircleIndex)
+ {
+	 CV_Assert(image.type() == CV_8UC1);
+	 circles.clear();
+
+	 // Edge Detection
+	// Mat edges;
+	// Canny(image, edges, MAX(canny_threshold/2,1), canny_threshold, 3);
+
+	 // Create point set from Canny Output
+	 uchar ucThd = 100;
+	 int nCountThd = 25;
+
+	 vector<Point2d> points;
+	 for(int r = 0; r < image.rows; r++)
+	 {
+		uchar *ptr = image.ptr<uchar>(r);
+		 for(int c = 0; c < image.cols; c++)
+		 {
+			 if(ptr[c] >ucThd)
+			 {
+				 points.push_back(Point2d(c,r));
+			 }
+		 }	
+	 }
+
+
+	 //产生4优选参数点
+	 int nSum =0;
+	 int topy,bottomy,leftx,rightx; //几个方面
+
+	 //定位上边界
+	 for(int r = 0; r < image.rows; r++)
+	 {
+		 nSum =0;
+		 uchar *ptr = image.ptr<uchar>(r);
+		 for(int c = 0; c < image.cols; c++)
+		 {
+			 if(ptr[c] >ucThd)
+			 {
+				//points.push_back(Point2d(c,r));
+				 nSum++;
+				 if(nSum>nCountThd)
+				 {
+					 topy = r;
+					 break;
+				 }
+			 }
+		 }	
+	 }
+
+	 //定位下边界
+	 for(int r = image.rows-1; r > 0; r--)
+	 {
+		 nSum =0;
+		 uchar *ptr = image.ptr<uchar>(r);
+		 for(int c = 0; c < image.cols; c++)
+		 {
+			 if(ptr[c] >ucThd)
+			 {
+				 //points.push_back(Point2d(c,r));
+				 nSum++;
+				 if(nSum>nCountThd)
+				 {
+					 bottomy = r;
+					 break;
+				 }
+					 
+			 }
+		 }	
+	 }
+	 //定位左边界
+	
+	 int nStep = image.step;
+	 for(int c = image.cols-1; c > 0; c--)
+	 {
+		 nSum =0;
+		 uchar * ptr = image.data;
+		 for(int r = 0; r < image.rows; r++)
+		 {
+			 if((ptr)[c] >ucThd)
+			 {
+				 //points.push_back(Point2d(c,r));
+				 nSum++;
+				 if(nSum>nCountThd)
+				 {
+					 rightx = c;
+					 break;
+				 }
+					 
+			 }
+			 ptr +=nStep;
+		 }	
+	 }
+
+	 //定位右边界
+
+	
+	 nStep = image.step;
+	 for(int c = 0; c < image.cols; c++)
+	 {
+		 nSum =0;
+		  uchar * ptr = image.data;
+		 for(int r = 0; r < image.rows; r++)
+		 {
+			 if((ptr)[c] >ucThd)
+			 {
+				 //points.push_back(Point2d(c,r));
+				 nSum++;
+				 if(nSum>nCountThd)
+				 {
+					 leftx = c;
+					 break;
+				 }
+					 
+			 }
+			 ptr +=nStep;
+		 }	
+	 }
+
+	 //计算centerX,ceterY, nRadius
+	 Point2d Center;
+	 Center.x = (leftx+rightx)/2;
+	 Center.y = (bottomy+topy)/2;
+	 double Radius = (abs(rightx - leftx)+abs(bottomy-topy))/4;
+
+	 double radius_tolerance = 3;
+	 int    points_dist_tolerance = 10;
+
+	 int nBiggestCircleSize =0;
+	 int points_threshold = 100;
+
+	 RNG rng;
+
+	 for(int iteration = 0; iteration < numIterations; iteration++) 
+	 {
+		 
+		 if(abs(abs(rightx - leftx) - abs(bottomy-topy))>points_dist_tolerance)
+			 continue;
+		 
+		 // vote
+		 vector<int> votes;
+		 vector<int> no_votes;
+		 for(int i = 0; i < (int)points.size(); i++) 
+		 {
+			 double vote_radius = norm(points[i] - Center);
+
+			 if(abs(vote_radius - Radius) < radius_tolerance) 
+			 {
+				 votes.push_back(i);
+			 }
+			 else
+			 {
+				 no_votes.push_back(i);
+			 }
+		 }
+		 if( (float)votes.size() / (2.0*CV_PI*Radius) >= circle_threshold )
+		 {
+			 circles.push_back(Vec3f(Center.x,Center.y,Radius));
+			 if(votes.size()>nBiggestCircleSize)
+			 {
+				 nBiggestCircleSize = votes.size();
+				 nBiggestCircleIndex  = circles.size()-1;
+			 }
+
+			 // remove points from the set so they can't vote on multiple circles
+			 std::vector<Point2d> new_points;
+			 for(int i = 0; i < (int)no_votes.size(); i++)
+			 {
+				 new_points.push_back(points[no_votes[i]]);
+			 }
+			 points.clear();
+			 points = new_points;		
+		 }
+
+		 // stop RANSAC if there are few points left
+		 if((int)points.size() < points_threshold)
+			 break;
+
+		 Center.x = rng.uniform(-5, 5); //随机生成
+		 Center.y = rng.uniform(-5,5);   
+		 Radius =   rng.uniform(-5,5);
+
+		 //
+	 }
+	 return;
+	
+ }
+
+ void circleRANSAC(Mat &image, vector<Vec3f> &circles, double canny_threshold, double circle_threshold, int numIterations, int &nBiggestCircleIndex)
+ {
+	 CV_Assert(image.type() == CV_8UC1 || image.type() == CV_8UC3);
+	 circles.clear();
+
+	 // Edge Detection
+	 Mat edges;
+	 Canny(image, edges, MAX(canny_threshold/2,1), canny_threshold, 3);
+
+	 // Create point set from Canny Output
+	 std::vector<Point2d> points;
+	 for(int r = 0; r < edges.rows; r++)
+	 {
+		 for(int c = 0; c < edges.cols; c++)
+		 {
+			 if(edges.at<unsigned char>(r,c) == 255)
+			 {
+				 points.push_back(cv::Point2d(c,r));
+			 }
+		 }	
+	 }
+
+	 // 4 point objects to hold the random samples
+	 Point2d pointA;
+	 Point2d pointB;
+	 Point2d pointC;
+	 Point2d pointD;
+
+	 // distances between points
+	 double AB;
+	 double BC;
+	 double CA;
+	 double DC;
+
+	 // varibales for line equations y = mx + b
+	 double m_AB;
+	 double b_AB;
+	 double m_BC;
+	 double b_BC;
+
+	 // varibles for line midpoints
+	 double XmidPoint_AB;
+	 double YmidPoint_AB;
+	 double XmidPoint_BC;
+	 double YmidPoint_BC;
+
+	 // variables for perpendicular bisectors
+	 double m2_AB;
+	 double m2_BC;
+	 double b2_AB;
+	 double b2_BC;
+
+	 // RANSAC
+	 cv::RNG rng; 
+	 int min_point_separation = 10; // change to be relative to image size?
+	 int colinear_tolerance = 1; // make sure points are not on a line
+	 int radius_tolerance = 3; // change to be relative to image size?
+	 int points_threshold = 100; //should always be greater than 4
+	 //double min_circle_separation = 10; //reject a circle if it is too close to a previously found circle
+	 //double min_radius = 10.0; //minimum radius for a circle to not be rejected
+
+	 int x,y;
+	 Point2d center;
+	 double radius;
+
+	 nBiggestCircleIndex =-1;
+	 int nBiggestCircleSize=0;
+	 // Iterate
+	 for(int iteration = 0; iteration < numIterations; iteration++) 
+	 {
+		 //std::cout << "RANSAC iteration: " << iteration << std::endl;
+
+		 // get 4 random points
+		 pointA = points[rng.uniform((int)0, (int)points.size())];
+		 pointB = points[rng.uniform((int)0, (int)points.size())];
+		 pointC = points[rng.uniform((int)0, (int)points.size())];
+		 pointD = points[rng.uniform((int)0, (int)points.size())];
+
+		 // calc lines
+		 AB = norm(pointA - pointB);
+		 BC = norm(pointB - pointC);
+		 CA = norm(pointC - pointA);
+		 DC = norm(pointD - pointC);
+
+		 // one or more random points are too close together
+		 if(AB < min_point_separation || BC < min_point_separation || CA < min_point_separation || DC < min_point_separation)
+			 continue;
+
+		 //find line equations for AB and BC
+		 //AB
+		 m_AB = (pointB.y - pointA.y) / (pointB.x - pointA.x + 0.000000001); //avoid divide by 0
+		 b_AB = pointB.y - m_AB*pointB.x;
+
+		 //BC
+		 m_BC = (pointC.y - pointB.y) / (pointC.x - pointB.x + 0.000000001); //avoid divide by 0
+		 b_BC = pointC.y - m_BC*pointC.x;
+
+
+		 //test colinearity (ie the points are not all on the same line)
+		 if(abs(pointC.y - (m_AB*pointC.x + b_AB + colinear_tolerance)) < colinear_tolerance) 
+			 continue;
+
+		 //find perpendicular bisector
+		 //AB
+		 //midpoint
+		 XmidPoint_AB = (pointB.x + pointA.x) / 2.0;
+		 YmidPoint_AB = m_AB * XmidPoint_AB + b_AB;
+		 //perpendicular slope
+		 m2_AB = -1.0 / m_AB;
+		 //find b2
+		 b2_AB = YmidPoint_AB - m2_AB*XmidPoint_AB;
+
+		 //BC
+		 //midpoint
+		 XmidPoint_BC = (pointC.x + pointB.x) / 2.0;
+		 YmidPoint_BC = m_BC * XmidPoint_BC + b_BC;
+		 //perpendicular slope
+		 m2_BC = -1.0 / m_BC;
+		 //find b2
+		 b2_BC = YmidPoint_BC - m2_BC*XmidPoint_BC;
+
+		 //find intersection = circle center
+		 x = (b2_AB - b2_BC) / (m2_BC - m2_AB);
+		 y = m2_AB * x + b2_AB;	
+		 center = Point2d(x,y);
+		 radius = cv::norm(center - pointB);
+
+		 /// geometry debug image
+		 if(false)
+		 {
+			 Mat debug_image = edges.clone();
+			 cvtColor(debug_image, debug_image, CV_GRAY2RGB);
+
+			 Scalar pink(255,0,255);
+			 Scalar blue(255,0,0);
+			 Scalar green(0,255,0);
+			 Scalar yellow(0,255,255);
+			 Scalar red(0,0,255);
+
+			 // the 3 points from which the circle is calculated in pink
+			 circle(debug_image, pointA, 3, pink);
+			 circle(debug_image, pointB, 3, pink);
+			 circle(debug_image, pointC, 3, pink);
+
+			 // the 2 lines (blue) and the perpendicular bisectors (green)
+			 line(debug_image,pointA,pointB,blue);
+			 line(debug_image,pointB,pointC,blue);
+			 line(debug_image,Point(XmidPoint_AB,YmidPoint_AB),center,green);
+			 line(debug_image,Point(XmidPoint_BC,YmidPoint_BC),center,green);
+
+			 circle(debug_image, center, 3, yellow); // center
+			 circle(debug_image, center, radius, yellow);// circle
+
+			 // 4th point check
+			 //circle(debug_image, pointD, 3, red);
+
+			 imshow("ransac debug", debug_image);
+			 waitKey(0);
+		 }
+
+		 //check if the 4 point is on the circle
+		 if(abs(cv::norm(pointD - center) - radius) > radius_tolerance) 
+		        continue;
+
+		 // vote
+		 std::vector<int> votes;
+		 std::vector<int> no_votes;
+		 for(int i = 0; i < (int)points.size(); i++) 
+		 {
+			 double vote_radius = norm(points[i] - center);
+
+			 if(abs(vote_radius - radius) < radius_tolerance) 
+			 {
+				 votes.push_back(i);
+			 }
+			 else
+			 {
+				 no_votes.push_back(i);
+			 }
+		 }
+
+		 // check votes vs circle_threshold
+		 if( (float)votes.size() / (2.0*CV_PI*radius) >= circle_threshold )
+		 {
+			 circles.push_back(Vec3f(x,y,radius));
+			 if(votes.size()>nBiggestCircleSize)
+			 {
+				 nBiggestCircleSize = votes.size();
+				 nBiggestCircleIndex  = circles.size()-1;
+			 }
+			 
+			 // voting debug image
+			 if(false)
+			 {
+				 Mat debug_image2 = edges.clone();
+				 cvtColor(debug_image2, debug_image2, CV_GRAY2RGB);
+
+				 Scalar yellow(0,255,255);
+				 Scalar green(0,255,0);
+
+				 circle(debug_image2, center, 3, yellow); // center
+				 circle(debug_image2, center, radius, yellow);// circle
+
+				 // draw points that voted
+				 for(int i = 0; i < (int)votes.size(); i++)
+				 {
+					 circle(debug_image2, points[votes[i]], 1, green);
+				 }
+
+				 imshow("ransac debug", debug_image2);
+				 waitKey(0);
+			 }
+
+			 // remove points from the set so they can't vote on multiple circles
+			 std::vector<Point2d> new_points;
+			 for(int i = 0; i < (int)no_votes.size(); i++)
+			 {
+				 new_points.push_back(points[no_votes[i]]);
+			 }
+			 points.clear();
+			 points = new_points;		
+		 }
+
+		 // stop RANSAC if there are few points left
+		 if((int)points.size() < points_threshold)
+			 break;
+	 }
+
+	 return;
+ }
+ void TESTALGORITHMS_API circleFit(Mat& plotMat, vector<Point>circleData)
+ {
+	 //Mat plotMat(1024,1024, CV_8UC3, Scalar::all(100));
+
+	 RotatedRect rotRect = fitEllipse(circleData);
+	 Point2f center = rotRect.center;
+	 Size2f sz = rotRect.size;
+
+	 int nRadius = (int)(sz.width+sz.height)>>2;
+
+	 circle(plotMat, center, nRadius, Scalar(0,0,255));
+	 
+	 imwrite("..\\sample\\result\\circle_data_fit.bmp", plotMat);
+ }
+
+ TESTALGORITHMS_API bool Common_CircleFit(vector<Point> circleData, float & fCenterX,float & fCenterY,float & fRad)
+ {
+	 if (circleData.empty())
+	 {
+		 return FALSE;
+	 }
+
+	 int nPtSize = circleData.size();
+   // #define DataParam_MinCirclePoint 1800
+
+	 float fCoefficent[3];
+	 float *fPointData = new float [nPtSize*3];
+	 
+	 float *fConst = new float[nPtSize];
+	 memset(fPointData,0x00,sizeof(fPointData));
+	 memset(fConst,0x00,sizeof(fConst));
+	 memset(fCoefficent,0x00,sizeof(fCoefficent));
+
+	 int nCount= 0;
+
+	 for ( int i=0;i<nPtSize;i++)
+	 {
+
+		 fPointData[nCount*3+0] = (float)circleData[i].x;
+		 fPointData[nCount*3+1] = (float)circleData[i].y;
+		 fPointData[nCount*3+2] = 1.0f;
+		 fConst[nCount] =(float)(circleData[i].x *circleData[i].x + circleData[i].y * circleData[i].y);
+		 nCount++;
+	 }
+
+	 CvMat A = cvMat(nCount, 3, CV_32F, fPointData);
+	 CvMat B = cvMat(nCount, 1, CV_32F, fConst);
+	 CvMat X = cvMat(3, 1, CV_32F, fCoefficent);
+
+	 cvSolve(&A, &B, &X);
+	 float fx = fCoefficent[0]/2.0f;
+	 float fy = fCoefficent[1]/2.0f;
+	 float fr2 = fCoefficent[2] + fx*fx + fy*fy;
+	 float fr  = fr2>0 ? sqrt(fr2) : 0;
+
+	 if (fx > 0 && fy>0 && fr >0 )
+	 {
+		 fCenterX = fx;
+		 fCenterY = fy;
+		 fRad = fr;
+		 return TRUE;
+	 }
+	 else
+	 {
+		 fCenterX = 0.0f;
+		 fCenterY = 0.0f;
+		 fRad = 0.0f;
+		 return FALSE;
+	 }
+ }
+ void randomCircleData(Mat& _plotMat, Vec3f circle, vector<Point>&circleData, const int data_nums)
+ {
+	 if(_plotMat.empty() ||data_nums<5)
+	 {
+		 cout<<"random circle data is wrong"<<endl;
+		 return;
+	 }
+
+	 circleData.clear();
+	 Point2f center;
+	 float fCenterX = circle[0];
+	 float fCenterY = circle[1];
+	 float fRadius =  circle[2];
+
+	 //int nAngNum = 360/data_nums
+	 double* dSin = new double[data_nums];
+	 double* dCos = new double[data_nums];
+
+
+	 RNG rng(0xFFFFFFFF);
+
+	 for (int i=0;i<data_nums;i++)
+	 {
+		 dCos[i] = cos((float)i*2.0f*CV_PI/data_nums);
+		 dSin[i] = sin((float)i*2.0f*CV_PI/data_nums);
+
+		 int x = fCenterX + fRadius*dSin[i]+rng.gaussian(20);
+		 int y = fCenterY + fRadius*dCos[i]+rng.gaussian(10);
+
+		 //角度
+		 if(x<0||x>_plotMat.cols-1)
+			 continue;
+		 if(y<0||y>_plotMat.rows-1)
+			 continue;
+		 _plotMat.at<Vec3b>(x,y)[0] = 0;
+		 _plotMat.at<Vec3b>(x,y)[1] = 255;
+		 _plotMat.at<Vec3b>(x,y)[2] = 0;
+
+		 circleData.push_back(Point(x,y));
+
+	 }
+
+	 //
+
+	 //
+	 if(dSin)
+		 delete [] dSin;
+	 dSin = NULL;
+	 if(dCos)
+		 delete [] dCos;
+	 dCos = NULL;
+ }
+
+ void TESTALGORITHMS_API drawHist(Mat& histMat, int* pHist, const int cnt, const int nMapWidth, const int nMapHeight, const Scalar scalar, const int hist_type)
+ {
+	 if(histMat.empty())
+	 {
+		  histMat=Mat(Size(nMapWidth, nMapHeight), CV_8UC3, Scalar::all(30));
+	 }
+	
+	 int min = 0xffffffff;
+	 int max = 0x00000000;
+	 for(int i =0; i<cnt; i++)
+	 {
+	     if(min>pHist[i])
+		 {
+	         min = pHist[i];
+		 }
+		 if(max<pHist[i])
+		 {
+			 max = pHist[i];
+		 }
+	 }
+
+	 //normalization
+	 for(int i =0; i<cnt; i++)
+	 {
+		 pHist[i] =(int) (0.8*nMapHeight*(pHist[i]-min)/(max- min));
+	 }
+
+	 int k =0;
+	 int step = nMapWidth/cnt;
+	 for(int i =0; i<nMapWidth; i+=step, k++)
+	 {
+		 int y = pHist[k];
+		 if(hist_type == Hist_Bar)
+		 {
+	          line(histMat, Point(i, nMapHeight-y-1), Point(i,nMapHeight-1), scalar,2);
+		 }
+		 else if(hist_type == Hist_Line)
+		 {
+	         if(k<1||k>=cnt)
+				 continue;
+			 line(histMat, Point(i-3,nMapHeight-pHist[k-1]-1), Point(i, nMapHeight-pHist[k]-1), scalar, 2);
+		 }
+		 
+	 }
+ }
+
+ //反向投影算法
+
+ void calcBackProject(Mat src,  Rect src_roi,  const int nBinNum,  Mat inMat,   Mat& backProjMat)
+ {
+	 if(src.empty()||src_roi.width<=0||src_roi.height<=0)
+		 return;
+
+	 //计算模板图像直方图
+
+	 
+	 int * pHist = new int[nBinNum];
+	 memset(pHist, 0x00, sizeof(int)*nBinNum);
+	 int nBinStep = 256/nBinNum;
+	 
+	 if(src.channels() == 1)
+	 {
+		 for(int i= src_roi.y; i<src_roi.y+src_roi.height-1; i++)
+		 {
+			 uchar * ptr = src.ptr<uchar>(i);
+			 for(int j = src_roi.x; j<src_roi.x+src_roi.width; j++)
+			 {
+				int nBinIndex = cvRound(ptr[j]/(nBinStep));
+				 pHist[nBinIndex]++;
+			 }
+		 }
+	 }
+	
+
+
+	 int min = 0xffffffff;
+	 int max = 0x00000000;
+	 for(int i =0; i<nBinNum; i++)
+	 {
+		 if(min>pHist[i])
+		 {
+			 min = pHist[i];
+		 }
+		 if(max<pHist[i])
+		 {
+			 max = pHist[i];
+		 }
+	 }
+
+	 //normalization
+	 for(int i =0; i<nBinNum; i++)
+	 {
+		 pHist[i] =(int) (255*(pHist[i]-min)/(max- min));
+	 }
+
+	 for(int i= 0; i<inMat.rows; i++)
+	 {
+		 uchar * inptr = inMat.ptr<uchar>(i);
+		 uchar * backPtr = backProjMat.ptr<uchar>(i);
+		 for(int j = 0; j<inMat.cols; j++)
+		 {
+			int nBinIndex =  cvRound(inptr[j]/nBinStep);
+			backPtr[j] = (uchar)(pHist[nBinIndex]);
+		 }
+	 }
+
+	 //imwrite("..\\sample\\result\\BackProjection_Image.bmp", backProjMat);
+ }

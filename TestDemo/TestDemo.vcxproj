@@ -154,12 +154,23 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="circle.h" />
+    <ClInclude Include="CircleFitByHyper.h" />
+    <ClInclude Include="data.h" />
     <ClInclude Include="lsd.h" />
+    <ClInclude Include="mystuff.h" />
+    <ClInclude Include="PrintFitCirclesArc.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Circle.cpp" />
+    <ClCompile Include="CircleFitByHyper.cpp" />
+    <ClCompile Include="Data.cpp" />
     <ClCompile Include="lsd.cpp" />
+    <ClCompile Include="mystuff.cpp" />
+    <ClCompile Include="PrintFitCirclesArc.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -167,6 +178,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TestDemo.cpp" />
+    <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

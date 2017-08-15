@@ -27,6 +27,24 @@
     <ClInclude Include="lsd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CircleFitByHyper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="circle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="data.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mystuff.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PrintFitCirclesArc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -36,6 +54,24 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="lsd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CircleFitByHyper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PrintFitCirclesArc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Circle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Data.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mystuff.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

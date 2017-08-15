@@ -30,6 +30,11 @@ enum LineFitType
 	Emulator_Fit,
 	RANSAC_Fit,
 };
+enum HistType
+{
+	Hist_Bar,
+	Hist_Line,
+};
 
 TESTALGORITHMS_API int DetectConnFindContours(Mat grayImg, vector<vector<Point>>&contours, const uchar threshold, const bool bInverse);
 TESTALGORITHMS_API int DrawFindContours(Mat Img, vector<vector<Point>> contours);
@@ -148,15 +153,11 @@ nPsi:   设置的相位偏差
 TESTALGORITHMS_API bool Common_Creat_GaborFilter(const int nGaborW, const int nGaborH, const float dFre, const double dSigma, const double dTheta, const double dGamma,const int nPsi, Mat &RealGaborFilter,Mat& ImaginaryGaborFilter);
 
 
-//Hough_Line_Transformation
-/*
-
-*/
+//直线检测与拟合
 
 TESTALGORITHMS_API void lineDetect(Mat _inImg, Mat& _outImg, vector<Vec2f>vecLineParams, const int _lineDetectType);
+TESTALGORITHMS_API void lineFit(Mat& _outImg, vector<Point>fitData, Vec4f&vecLineParams, const int _lineFitType);
 
-
-//直线拟合
 struct SLine
 {
 	SLine():
@@ -167,11 +168,81 @@ struct SLine
 	int numOfValidPoints;
 };
 
-TESTALGORITHMS_API void lineFit(Mat& _outImg, vector<Point>fitData, Vec4f&vecLineParams, const int _lineFitType);
-
-
 void RansancFit(vector<Point>fitData, Vec4f&vecLineParams);
 
 Vec4f TotalLeastSquares(vector<Point>& nzPoints, vector<int> ptOnLine);
 
 SLine LineFitRANSAC(float t, float p, float e, int T, vector<Point>& nzPoints);
+
+
+//圆的检测与拟合
+typedef struct tagDetectCircleParam
+{
+	int m_minRadius;
+	int m_maxRadius;
+
+	Rect m_centerROI;
+}DetectCircleParam;
+
+typedef struct tagDetectCircleData
+{
+	Point m_circlePoints;
+
+};
+
+TESTALGORITHMS_API int  circleDetect(Mat _inImg, Mat& _outImg, vector<Vec3f>&veccircleParams, const int _circleDetectType);
+/*
+//1. 随机选取4个边缘点，A、B、C、D
+  2. 且这4个点，任意三个互不共线
+  3. 用其中3个点A、B、C计算直线AB、BC的方程y = m*x + b  得到4个参数 (m_AB,b_AB,m_BC,b_BC)
+  4. 计算这AB、BC的中分线，以及他们中分线的交点P的坐标（x_sector,y_sector）
+  5. 圆心为O=(x_sector,y_sector), 半径Radius = |OA|
+  6. 判断D是否在圆上，如果不在圆上，那么本次RANSAC迭代结束，继续重新产生随机数
+  7. 遍历前景点，如果前景点在当前圆上，则对其进行投票
+  8. 如果在圆上则判断圆上的点的个数是否满足阈值，如果满足阈值，将圆的参数加入到队列中
+  9. 删除在该圆上面的点，因为不能让该圆上的点参与下一个圆的投票。
+
+*/
+void circleRANSAC(Mat &image, vector<Vec3f> &circles, double canny_threshold, double circle_threshold, int numIterations, int& index);
+
+//针对特定的应用场景进行圆形检测
+/*/
+1. 计算目标的四个顶点：topy,bottomy,leftx,rightx;
+2. 根据这四个值计算初始:center, radius
+3. 对center和radius进行RANSAC
+//
+/*/
+
+void TESTALGORITHMS_API circleRANSACEx(Mat &image, vector<Vec3f> &circles, double circle_threshold, int numIterations, int &nBiggestCircleIndex);
+
+//圆形的拟合
+void TESTALGORITHMS_API circleFit(Mat& plotMat, vector<Point>circleData);
+
+void TESTALGORITHMS_API randomCircleData(Mat& _plotMat, Vec3f circle, vector<Point>&circleData, const int data_nums);
+
+ bool TESTALGORITHMS_API Common_CircleFit(vector<Point> circleData, float & fCenterX,float & fCenterY,float & fRad);
+
+
+ //画直方图
+ /*
+ histMap:直方图图形
+ cnt:直方图binNum
+ nMapWidth:直方图Map宽度，一般为3*cnt
+ nMapHeight:直方图Map的高度，一般为NormalMax的1.2
+ Scalar:绘制直方图的颜色
+ line_Type：直方图类型，目前支持两种类型
+ enum HistType
+ {
+ Hist_Bar,
+ Hist_Line,
+ };
+ */
+ void TESTALGORITHMS_API drawHist(Mat& histMat, int* pHist, const int cnt, const int nMapWidth, const int nMapHeight, const Scalar scalar, const int hist_type);
+
+ //反向投影算法，进行图像分割或者目标跟踪
+ //通过反向投影算法得到颜色概率分布图
+ //src src_roi, template图像和，跟踪目标区域
+ //inMat, 新的输入图像，在输入图像上面找到目标区域
+ //反向投影图，颜色概率图
+ //nBinNum 直方图bin的数目
+ void TESTALGORITHMS_API calcBackProject(Mat src, Rect src_roi, const int nBinNum,  Mat inMat, Mat& backProjMat);
