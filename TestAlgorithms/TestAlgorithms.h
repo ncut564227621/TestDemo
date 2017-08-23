@@ -246,3 +246,8 @@ void TESTALGORITHMS_API randomCircleData(Mat& _plotMat, Vec3f circle, vector<Poi
  //反向投影图，颜色概率图
  //nBinNum 直方图bin的数目
  void TESTALGORITHMS_API calcBackProject(Mat src, Rect src_roi, const int nBinNum,  Mat inMat, Mat& backProjMat);
+
+ //Flood Fill
+ void TESTALGORITHMS_API FloodFilled(Point seedPt, Mat src, Mat& dst, Scalar curScalar, Scalar scalar, uchar& uLowThd, uchar& uHighThd);
+
+//

@@ -8,6 +8,10 @@
 #include "lsd.h"
 
 #include "CircleFitByHyper.h"
+#include "floodFill.h"
+
+//extern Mat src;
+//extern Mat dst;
 
 
 void randomlineData(Mat& fitMap, vector<Point>& fitData, vector<Point>& fitData_2, const int ptNums);
@@ -15,7 +19,7 @@ void randomlineData(Mat& fitMap, vector<Point>& fitData, vector<Point>& fitData_
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Mat img = imread("..\\Sample\\hua.jpg",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
+	Mat img = imread("..\\Sample\\handsome.jpg",CV_LOAD_IMAGE_COLOR);//image size:720*580 px
 
 	Mat _inImg(img.size(), CV_8UC1, Scalar(0));
 	Mat _outImg(img.size(), CV_8UC1, Scalar(0));
@@ -34,9 +38,64 @@ int _tmain(int argc, _TCHAR* argv[])
 		_inImg = img.clone();
 	}
 
+	Mat floodFillMat(img.size(), CV_8UC3, Scalar::all(0));
 
+	Point seedPt(34,42);
+	Point orgPt = seedPt;
 
+	Scalar setScalar;
 	
+
+	Scalar curScalar = img.at<Vec3b>(42,34);
+	setScalar = curScalar;
+	Scalar seedColor(setScalar);
+
+	uchar uLowLimit = 30, uUPLimit =30;
+
+	CFloodFilled ObFloodFill(img, floodFillMat);
+	Size roiwin = Size(img.cols,img.rows);
+
+	for(int i = (orgPt.y - roiwin.height/2); i<orgPt.y+roiwin.height/2; i++)
+	{
+		for(int j = (orgPt.x - roiwin.width/2); j<orgPt.x+roiwin.width/2; j++)
+		{
+			
+			if(i<0||i>img.rows-1)
+				continue;
+			if(j<0||j>img.cols-1)
+				continue;
+
+			bool bFlag= true;
+			Vec3b dstVec = ObFloodFill.dst.at<Vec3b>(i, j);
+
+			if(dstVec[0]== setScalar[0]&&dstVec[1] == setScalar[1] && dstVec[2] == setScalar[2])
+			{
+				//bFlag = false;
+				continue;
+			}
+
+			bool bFlag_1 = false;
+			Vec3b srcVec = ObFloodFill.src.at<Vec3b>(i, j);
+			if(srcVec[0] >=(int)((int)seedColor.val[0]-(int)uLowLimit) && srcVec[0] <= (int)((int)seedColor.val[0]+ (int)uUPLimit) 
+				&& srcVec[1] >=(int)((int)seedColor.val[1]-(int)uLowLimit) && srcVec[1] <= (int)((int)seedColor.val[1]+ (int)uUPLimit)&&
+				srcVec[2] >=(int)((int)seedColor.val[2]-(int)uLowLimit) && srcVec[2] <= (int)((int)seedColor.val[2]+ (int)uUPLimit))
+			{
+				bFlag_1 = true;
+			}
+
+			if(bFlag && bFlag_1)
+			{
+	            seedPt = Point(j, i);
+				ObFloodFill.floodFillScanline(seedPt, setScalar, seedColor, uLowLimit, uUPLimit, img.cols, img.rows);
+				//ObFloodFill.floodFill8Stack(seedPt, setScalar, seedColor, uLowLimit, uUPLimit, img.cols, img.rows);
+			}
+			
+		}
+	}
+	imwrite("..\\sample\\result\\flood8.bmp", ObFloodFill.dst);
+	return 0;
+
+
 	for(int i =0; i<10; i++)
 
 	{

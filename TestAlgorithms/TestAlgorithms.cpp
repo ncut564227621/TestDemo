@@ -1795,3 +1795,122 @@ TESTALGORITHMS_API bool secondPass(vector<vector<int>>&equalLabel, bool* bVisitF
 
 	 //imwrite("..\\sample\\result\\BackProjection_Image.bmp", backProjMat);
  }
+
+ //基于递归的实现
+ //基于8领域
+ void TESTALGORITHMS_API  FloodFilled(Point seedPt, Mat src, Mat& dst, Scalar curScalar, Scalar scalar, uchar& uLowThd, uchar& uHighThd)
+ {
+	 if(src.empty()|| dst.empty())
+		 return;
+	 if(src.depth()!=dst.depth())
+	 {
+		 return;
+	 }
+	 int nX =  seedPt.x;
+	 int nY =  seedPt.y;
+
+	 //确保高值不越界
+	 if(255-curScalar.val[0]<uHighThd)
+	 {
+		  uHighThd = 255 - curScalar.val[0];
+	 }
+	 if(255-curScalar.val[1]<uHighThd)
+	 {
+		 uHighThd = 255 - curScalar.val[1];
+	 }
+	 if(255-curScalar.val[2]<uHighThd)
+	 {
+		 uHighThd = 255 - curScalar.val[2];
+	 }
+
+
+	 //确保低值不越界
+	 if(curScalar.val[0] -0 <uLowThd)
+	 {
+		 uLowThd = curScalar.val[0];
+	 }
+	 if(curScalar.val[1] -0 <uLowThd)
+	 {
+		 uLowThd = curScalar.val[1];
+	 }
+
+	 if(curScalar.val[2] -0 <uLowThd)
+	 {
+		 uLowThd = curScalar.val[2];
+	 }
+	Vec3b srcPixelScalar = src.at<Vec3b>(nY, nX);
+
+	 if(   srcPixelScalar[0]<=curScalar.val[0]+uHighThd &&   srcPixelScalar[0]>=curScalar.val[0]-uLowThd
+		 && srcPixelScalar[1]<=curScalar.val[1]+uHighThd && srcPixelScalar[1]>=curScalar.val[1]-uLowThd
+		 && srcPixelScalar[2]<=curScalar.val[2]+uHighThd && srcPixelScalar[2]>=curScalar.val[2]-uLowThd)
+	 {
+		 
+		 dst.at<Vec3b>(nY,nX) = Vec3b(scalar.val[0],scalar.val[1],scalar.val[2]);
+
+		 
+
+
+		 Point leftPt, topLeftPt, topPt, topRightPt, rightPt, rightDnPt, dnPt,leftDnPt;
+		 if(nX>0&&nX<src.cols&&nY>0&&nY<src.rows)
+		 {
+			 leftDnPt.x = nX -1;
+			 leftDnPt.y = nY;
+			 // if(dst.at<Vec3b>(nY,nX-1)[0] == 0&&dst.at<Vec3b>(nY,nX-1)[1] == 0&&dst.at<Vec3b>(nY,nX-1)[2] == 0)
+			 {
+				 FloodFilled(leftDnPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 topLeftPt.x = nX -1;
+			 topLeftPt.y = nY -1;
+			 //if(dst.at<Vec3b>(nY-1,nX-1)[0] == 0&&dst.at<Vec3b>(nY-1,nX-1)[1] == 0&&dst.at<Vec3b>(nY-1,nX-1)[2] == 0)
+			 {
+				 FloodFilled(topLeftPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 topPt.x = nX;
+			 topPt.y = nY -1;
+			 // if(dst.at<Vec3b>(nY-1,nX)[0] == 0&&dst.at<Vec3b>(nY-1,nX)[1] == 0&&dst.at<Vec3b>(nY-1,nX)[2] == 0)
+			 {
+				 FloodFilled(topLeftPt, src, dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+
+			 topRightPt.x = nX+1;
+			 topRightPt.y = nY -1;
+			 // if(dst.at<Vec3b>(nY-1,nX+1)[0] == 0&&dst.at<Vec3b>(nY-1,nX+1)[1] == 0&&dst.at<Vec3b>(nY-1,nX+1)[2] == 0)
+			 {
+				 FloodFilled(topRightPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 rightPt.x = nX+1;
+			 rightPt.y = nY;
+			 // if(dst.at<Vec3b>(nY,nX+1)[0] == 0&&dst.at<Vec3b>(nY,nX+1)[1] == 0&&dst.at<Vec3b>(nY,nX+1)[2] == 0)
+			 {
+				 FloodFilled(rightPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 rightDnPt.x = nX+1;
+			 rightDnPt.y = nY+1;
+			 // if(dst.at<Vec3b>(nY+1,nX+1)[0] == 0&&dst.at<Vec3b>(nY+1,nX+1)[1] == 0&&dst.at<Vec3b>(nY+1,nX+1)[2] == 0)
+			 {
+				 FloodFilled(rightDnPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 dnPt.x = nX;
+			 dnPt.y = nY+1;
+			 // if(dst.at<Vec3b>(nY+1,nX)[0] == 0&&dst.at<Vec3b>(nY+1,nX)[1] == 0&&dst.at<Vec3b>(nY+1,nX)[2] == 0)
+			 {
+				 FloodFilled(dnPt, src,  dst, curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+			 leftDnPt.x = nX-1;
+			 leftDnPt.y = nY+1;
+			 // if(dst.at<Vec3b>(nY+1,nX-1)[0] == 0&&dst.at<Vec3b>(nY+1,nX-1)[1] == 0&&dst.at<Vec3b>(nY+1,nX-1)[2] == 0)
+			 {
+				 FloodFilled(leftDnPt, src,  dst,curScalar, scalar, uLowThd, uHighThd);
+			 }
+
+		 }
+	 }
+ }
+	 

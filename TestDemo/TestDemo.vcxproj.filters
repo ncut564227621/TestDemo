@@ -45,6 +45,9 @@
     <ClInclude Include="PrintFitCirclesArc.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="floodFill.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -72,6 +75,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Utilities.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="floodFill.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

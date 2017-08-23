@@ -112,6 +112,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../x64/Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_ts300d.lib;opencv_world300d.lib;TestAlgorithms.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>20000000000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -148,6 +149,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opencv_ts300.lib;opencv_world300.lib;TestAlgorithms.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>100000000000000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -157,6 +159,7 @@
     <ClInclude Include="circle.h" />
     <ClInclude Include="CircleFitByHyper.h" />
     <ClInclude Include="data.h" />
+    <ClInclude Include="floodFill.h" />
     <ClInclude Include="lsd.h" />
     <ClInclude Include="mystuff.h" />
     <ClInclude Include="PrintFitCirclesArc.h" />
@@ -168,6 +171,7 @@
     <ClCompile Include="Circle.cpp" />
     <ClCompile Include="CircleFitByHyper.cpp" />
     <ClCompile Include="Data.cpp" />
+    <ClCompile Include="floodFill.cpp" />
     <ClCompile Include="lsd.cpp" />
     <ClCompile Include="mystuff.cpp" />
     <ClCompile Include="PrintFitCirclesArc.cpp" />
