@@ -1,29 +1,33 @@
-﻿生成启动时间为 2017/8/22 15:14:32。
+﻿生成启动时间为 2017/9/5 15:42:51。
      1>项目“F:\3-Project\4-QFJ\TestDemo\TestDemo\TestDemo.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files (x86)\Visual Leak Detector\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Release\TestDemo.pch" /Fo"x64\Release\\" /Fd"x64\Release\vc110.pdb" /Gd /TP /errorReport:prompt floodFill.cpp TestDemo.cpp
-         floodFill.cpp
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-     1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-     1>floodFill.cpp(14): warning C4244: “参数”: 从“double”转换到“uchar”，可能丢失数据
-     1>floodFill.cpp(31): warning C4804: “<=”: 在操作中使用类型“bool”不安全
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files (x86)\Visual Leak Detector\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"x64\Release\TestDemo.pch" /Fo"x64\Release\\" /Fd"x64\Release\vc110.pdb" /Gd /TP /errorReport:prompt TestDemo.cpp
          TestDemo.cpp
      1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
      1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
      1>E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/utility.hpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
      1>f:\3-project\4-qfj\testdemo\testdemo\../TestAlgorithms/TestAlgorithms.h(191): warning C4091: “typedef ”: 没有声明变量时忽略“tagDetectCircleData”的左侧
-     1>TestDemo.cpp(97): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-     1>TestDemo.cpp(99): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-     1>TestDemo.cpp(109): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-     1>TestDemo.cpp(111): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+     1>f:\3-project\4-qfj\testdemo\testdemo\../TestAlgorithms/harris.h(20): warning C4251: “harris::cornerStrength”: class“cv::Mat”需要有 dll 接口由 class“harris”的客户端使用
+                 E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(731) : 参见“cv::Mat”的声明
+     1>f:\3-project\4-qfj\testdemo\testdemo\../TestAlgorithms/harris.h(21): warning C4251: “harris::localMax”: class“cv::Mat”需要有 dll 接口由 class“harris”的客户端使用
+                 E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(731) : 参见“cv::Mat”的声明
+     1>f:\3-project\4-qfj\testdemo\testdemo\../TestAlgorithms/harris.h(22): warning C4251: “harris::cornerThd”: class“cv::Mat”需要有 dll 接口由 class“harris”的客户端使用
+                 E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(731) : 参见“cv::Mat”的声明
+     1>f:\3-project\4-qfj\testdemo\testdemo\../TestAlgorithms/harris.h(29): warning C4251: “harris::kernel”: class“cv::Mat”需要有 dll 接口由 class“harris”的客户端使用
+                 E:\0-软件\0-4-编程软件\opencv 安装包\opencv\build\include\opencv2/core/mat.hpp(731) : 参见“cv::Mat”的声明
+     1>TestDemo.cpp(71): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+     1>TestDemo.cpp(73): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+     1>TestDemo.cpp(83): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+     1>TestDemo.cpp(85): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:..\x64\Release /LIBPATH:"C:\Program Files (x86)\Visual Leak Detector\lib\Win64" opencv_ts300.lib opencv_world300.lib TestAlgorithms.lib ippcore.lib ippcv.lib ippi.lib opencv_ts300.lib opencv_world300.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.pdb" /SUBSYSTEM:CONSOLE /STACK:"100000000000000" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.lib" /MACHINE:X64 x64\Release\Circle.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:..\x64\Release /LIBPATH:"C:\Program Files (x86)\Visual Leak Detector\lib\Win64" opencv_ts300.lib opencv_world300.lib TestAlgorithms.lib ippcore.lib ippcv.lib ippi.lib opencv_ts300.lib opencv_world300.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST:NO /DEBUG /PDB:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.pdb" /SUBSYSTEM:CONSOLE /STACK:"100000000000000" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\3-Project\4-QFJ\TestDemo\x64\Release\TestDemo.lib" /MACHINE:X64 x64\Release\Circle.obj
          x64\Release\CircleFitByHyper.obj
          x64\Release\Data.obj
          x64\Release\floodFill.obj
          x64\Release\lsd.obj
+         x64\Release\MeanShift.obj
          x64\Release\mystuff.obj
+         x64\Release\ParseCSV.obj
          x64\Release\PrintFitCirclesArc.obj
          x64\Release\stdafx.obj
          x64\Release\TestDemo.obj
@@ -35,4 +39,4 @@
 
 生成成功。
 
-已用时间 00:00:08.13
+已用时间 00:00:04.59

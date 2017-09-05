@@ -48,6 +48,12 @@
     <ClInclude Include="floodFill.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MeanShift.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseCSV.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -78,6 +84,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="floodFill.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MeanShift.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseCSV.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
